@@ -1,0 +1,34 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;0,800;0,900;1,700;1,800;1,900&family=Barlow:wght@300;400;500;600&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html { scroll-behavior: smooth; }
+
+body {
+  background: #111827;
+  color: #CBD5E1;
+  font-family: 'Barlow', sans-serif;
+  font-size: 16px;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 { color: #F1F5F9; }
+p { color: #CBD5E1; }
+::selection { background: #2196F3; color: #fff; }
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #111827; }
+::-webkit-scrollbar-thumb { background: #1E2A3F; border-radius: 2px; }
+a { text-decoration: none; color: inherit; }
+button { cursor: pointer; }
+
+/* Mobile responsive helpers */
+@media (max-width: 768px) {
+  .mobile-stack { flex-direction: column !important; }
+  .mobile-full { width: 100% !important; grid-template-columns: 1fr !important; }
+  .mobile-hide { display: none !important; }
+  .mobile-pad { padding: 1.5rem !important; }
+  .mobile-text-sm { font-size: clamp(48px, 12vw, 80px) !important; }
+}
