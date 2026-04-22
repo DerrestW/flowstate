@@ -72,7 +72,11 @@ const NAV_ITEMS = [
     {label:"Paddle Boards",href:"/permanent/paddle-boards"},
   ]},
   { label:"Live Now", href:"/live" },
-  { label:"Services", href:"/services" },
+  { label:"Services", href:"/services", children:[
+    { label:"Event Operations", href:"/services#event-operations" },
+    { label:"Destination Marketing", href:"/services#destination-marketing" },
+    { label:"Media Buying", href:"/services#media-buying" },
+  ]},
 ];
 
 export function SiteNav() {
@@ -172,7 +176,7 @@ export function SiteFooter() {
           {[
             { title:"Events", links:[["Urban Slide","/events/urban-slide"],["Mud Runs","/events/mud-runs"],["Color Runs","/events/color-runs"],["5K / Marathons","/events/5k-marathons"],["Conventions","/events/conventions"]] },
             { title:"Seasonal & Permanent", links:[["Light Shows","/seasonal/light-shows"],["Crawfish Festival","/seasonal/crawfish-festival"],["Boat Rentals","/permanent/boat-rentals"],["Donut Boats","/permanent/donut-boat-rentals"],["Live Now","/live"]] },
-            { title:"Company", links:[["Services","/services"],["Contact","/#contact"],["Admin","/admin"]] },
+            { title:"Services", links:[["Event Operations","/services#event-operations"],["Destination Marketing","/services#destination-marketing"],["Media Buying","/services#media-buying"],["Contact","/#contact"]] },
           ].map(col => (
             <div key={col.title}>
               <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", color:DIM, marginBottom:"1rem" }}>{col.title}</div>

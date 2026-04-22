@@ -54,15 +54,18 @@ export default function ServicesPage() {
           <div>
             <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>Full-Service City Activation Partner</div>
             <h1 style={{ ...DC, fontSize:"clamp(44px,7vw,82px)", lineHeight:0.9, letterSpacing:2, marginBottom:"1.5rem" }}>
-              EVENT OPS<br/>+ DESTINATION<br/>
-              <span style={{ background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>MARKETING.</span>
+              EVENT OPS<br/>+ MARKETING<br/>
+              <span style={{ background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent" }}>+ MEDIA BUYING.</span>
             </h1>
             <p style={{ fontSize:17, color:MUTED, lineHeight:1.75, fontWeight:300, marginBottom:"2rem" }}>
-              We're the only partner in the room who can produce your event <em>and</em> market your destination. From permits and staffing to paid social and destination platforms — one team, one contract, full accountability.
+              We're the only partner in the room who can produce your event, market your destination, <em>and</em> run your paid media. From permits and staffing to programmatic campaigns and influencer buys — one team, one contract, full accountability.
             </p>
             <div style={{ display:"flex", gap:"1rem", flexWrap:"wrap" }}>
               <GradientBtn href="#contact" size="lg">Get a Proposal</GradientBtn>
+              <div style={{ display:"flex", gap:"1rem", flexWrap:"wrap" }}>
               <a href="#destination-marketing" style={{ fontSize:13, fontWeight:600, color:MUTED, display:"inline-flex", alignItems:"center", gap:6, letterSpacing:"0.06em", textTransform:"uppercase" }}>Destination Marketing →</a>
+              <a href="#media-buying" style={{ fontSize:13, fontWeight:600, color:MUTED, display:"inline-flex", alignItems:"center", gap:6, letterSpacing:"0.06em", textTransform:"uppercase" }}>Media Buying →</a>
+            </div>
             </div>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }} className="four-col">
@@ -78,7 +81,7 @@ export default function ServicesPage() {
       </section>
 
       {/* EVENT OPERATIONS */}
-      <section style={{ padding:"5rem 1.5rem", background:NAVY_MID }}>
+      <section id="event-operations" style={{ padding:"5rem 1.5rem", background:NAVY_MID }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ marginBottom:"3rem" }}>
             <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>Category 01</div>
@@ -151,6 +154,75 @@ export default function ServicesPage() {
         </div>
       </section>
 
+      {/* MEDIA BUYING */}
+      <section id="media-buying" style={{ padding:"5rem 1.5rem", background:NAVY_MID }}>
+        <div style={{ maxWidth:1100, margin:"0 auto" }}>
+          <div style={{ marginBottom:"3rem" }}>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:ORANGE, marginBottom:"0.75rem" }}>Category 03</div>
+            <h2 style={{ ...DC, fontSize:"clamp(32px,5vw,56px)", lineHeight:0.95, letterSpacing:1, marginBottom:"0.75rem" }}>MEDIA BUYING</h2>
+            <p style={{ fontSize:16, color:MUTED, fontWeight:300, maxWidth:640 }}>We don't just run events — we run campaigns. With $1M+ in monthly ad spend managed across enterprise accounts, we bring performance marketing discipline to every city activation we touch.</p>
+          </div>
+
+          {/* Proof bar */}
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:"1rem", marginBottom:"3rem" }} className="four-col">
+            {[
+              ["$1M+","Monthly ad spend managed","💰"],
+              ["Meta + Google","Primary platforms","🎯"],
+              ["TikTok + YouTube","Video & social","📱"],
+              ["Enterprise-level","Campaign management","🏢"],
+            ].map(([val,label,icon]) => (
+              <div key={label} style={{ padding:"1.5rem", background:NAVY_CARD, borderRadius:14, border:BORDER, textAlign:"center", position:"relative", overflow:"hidden" }}>
+                <div style={{ position:"absolute", top:0, left:0, right:0, height:2, background:`linear-gradient(90deg,${ORANGE},#8B3CF7)` }}/>
+                <div style={{ fontSize:22, marginBottom:8, paddingTop:4 }}>{icon}</div>
+                <div style={{ ...DC, fontSize:24, color:SAND, marginBottom:4 }}>{val}</div>
+                <div style={{ fontSize:11, color:DIM, fontWeight:600, textTransform:"uppercase", letterSpacing:"0.06em" }}>{label}</div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"1.25rem", marginBottom:"3rem" }} className="three-col">
+            {[
+              { icon:"📺", title:"Traditional Media Buying", color:ORANGE, tagline:"TV, radio, OOH — all coordinated.", desc:"Local TV spots, radio placements, outdoor/billboard, and print buys coordinated around your event launch for maximum market penetration.", includes:["Local TV placement","Radio buys","Billboard & OOH","Print coordination","Reach & frequency planning","Market analysis"] },
+              { icon:"🎯", title:"Programmatic & Digital", color:BLUE, tagline:"Precision targeting at scale.", desc:"Display, video, connected TV, and audio programmatic campaigns targeting event-goers by location, behavior, and intent signals.", includes:["Programmatic display","Connected TV (CTV)","Streaming audio","Retargeting","Geo-fencing","Audience segmentation"] },
+              { icon:"📲", title:"Social & Search Buying", color:"#8B3CF7", tagline:"The platforms that move tickets.", desc:"Meta (Facebook/Instagram), Google Search & Display, TikTok, and YouTube campaigns built to drive ticket sales and event awareness.", includes:["Meta Ads (FB/IG)","Google Search & Display","TikTok Ads","YouTube pre-roll","Campaign strategy","Weekly reporting"] },
+              { icon:"🤳", title:"Influencer Media", color:"#E86B9A", tagline:"Authentic reach, measurable results.", desc:"Paid influencer amplification layered on top of organic partnerships — boosting the best-performing content to expand reach.", includes:["Paid post amplification","Story takeovers","Creator whitelisting","Content boosting","Reach tracking","ROI reporting"] },
+              { icon:"📊", title:"Campaign Strategy & Planning", color:ORANGE, tagline:"Media mix built for your market.", desc:"Full media plan development — budget allocation, channel mix, flight dates, and KPIs — tailored to your event size and city market.", includes:["Market analysis","Budget allocation","Channel mix planning","Flight scheduling","KPI framework","Competitive review"] },
+              { icon:"📈", title:"Analytics & Reporting", color:BLUE, tagline:"Every dollar accounted for.", desc:"Cross-channel attribution, ROAS tracking, and weekly performance reports so you always know what's working and what's not.", includes:["Cross-channel attribution","ROAS tracking","Weekly reports","Pixel setup","Conversion tracking","Post-campaign analysis"] },
+            ].map(s => <ServiceCard key={s.title} s={s}/>)}
+          </div>
+
+          {/* Enterprise credibility callout */}
+          <div style={{ background:NAVY_CARD, borderRadius:20, padding:"2.5rem", border:`0.5px solid rgba(255,107,43,0.3)`, display:"grid", gridTemplateColumns:"1fr 1fr", gap:"3rem", alignItems:"center" }} className="two-col">
+            <div>
+              <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:ORANGE, marginBottom:12 }}>Enterprise-Tested, City-Focused</div>
+              <h3 style={{ ...DC, fontSize:"clamp(24px,3.5vw,40px)", lineHeight:0.95, letterSpacing:1, marginBottom:"1rem" }}>MEDIA BUYING AT<br/>ENTERPRISE SCALE</h3>
+              <p style={{ fontSize:15, color:MUTED, lineHeight:1.75, fontWeight:300, marginBottom:"1.5rem" }}>
+                Our media buying capabilities are forged from managing paid media at the enterprise level — Fortune 500 brands, global campaigns, $1M+ monthly budgets. We bring that same rigor and platform expertise to every city activation we run.
+              </p>
+              <p style={{ fontSize:15, color:MUTED, lineHeight:1.75, fontWeight:300 }}>
+                Most event companies outsource their digital marketing. We own it — which means faster execution, tighter feedback loops, and better results for your activation.
+              </p>
+            </div>
+            <div style={{ display:"flex", flexDirection:"column", gap:"1rem" }}>
+              {[
+                { icon:"🏢", title:"Fortune 500 experience", body:"Platform expertise built managing campaigns for global enterprise brands at scale." },
+                { icon:"⚡", title:"No agency middleman", body:"We buy directly — faster execution, no markup, full transparency on every spend." },
+                { icon:"🔄", title:"Ops + media in sync", body:"Event operations and media campaigns run from the same team, coordinated from day one." },
+                { icon:"📋", title:"Full reporting included", body:"Weekly performance dashboards, post-event attribution, and clear ROI for every dollar spent." },
+              ].map(item => (
+                <div key={item.title} style={{ display:"flex", gap:12, padding:"1rem", background:NAVY_MID, borderRadius:12, border:BORDER }}>
+                  <span style={{ fontSize:20, flexShrink:0 }}>{item.icon}</span>
+                  <div>
+                    <div style={{ fontSize:14, fontWeight:700, color:SAND, marginBottom:3 }}>{item.title}</div>
+                    <div style={{ fontSize:13, color:MUTED, lineHeight:1.6, fontWeight:300 }}>{item.body}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* FULL FUNNEL */}
       <section style={{ padding:"5rem 1.5rem", background:NAVY_MID }}>
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
@@ -194,7 +266,7 @@ export default function ServicesPage() {
                 <div style={{ fontSize:10, fontWeight:700, color:DIM, textAlign:"center" }}>Typical</div>
                 <div style={{ fontSize:10, fontWeight:700, color:BLUE, textAlign:"center" }}>FlowState</div>
               </div>
-              {[["Event production","Event company","✓"],["Permits & compliance","Law firm","✓"],["Ticketing","3rd party","✓"],["Staffing","Agency","✓"],["Paid media","Digital agency","✓"],["Social & content","Social agency","✓"],["Influencers","Platform","✓"],["Press & PR","PR firm","✓"],["Destination platform","Dev + SEO","✓"]].map(([need,typ,us]) => (
+              {[["Event production","Event company","✓"],["Permits & compliance","Law firm","✓"],["Ticketing","3rd party","✓"],["Staffing","Agency","✓"],["Paid media","Digital agency","✓"],["Social & content","Social agency","✓"],["Influencers","Platform","✓"],["Press & PR","PR firm","✓"],["Destination platform","Dev + SEO","✓"],["Media buying","Media agency","✓"]].map(([need,typ,us]) => (
                 <div key={need} style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", padding:"0.75rem 1.25rem", borderBottom:BORDER }}>
                   <div style={{ fontSize:12, fontWeight:600, color:SAND }}>{need}</div>
                   <div style={{ fontSize:11, color:DIM, textAlign:"center" }}>{typ}</div>

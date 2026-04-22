@@ -391,28 +391,37 @@ export default function HomePage() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"4rem", alignItems:"center" }} className="proven-grid">
             <div>
-              <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>Proven Activations</div>
-              <h2 style={{ ...DC, fontSize:"clamp(30px,4.5vw,54px)", lineHeight:0.95, letterSpacing:1, marginBottom:"1.5rem" }}>REAL EVENTS.<br/>REAL RESULTS.</h2>
-              <p style={{ fontSize:15, color:MUTED, lineHeight:1.75, marginBottom:"1.5rem", fontWeight:300 }}>Every activation is backed by years of operational experience, municipal relationships, and a team that has done this hundreds of times.</p>
-              <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem", marginBottom:"2rem" }}>
-                {PROVEN.map(item => (
-                  <div key={item.title} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"0.875rem", background:NAVY_CARD, borderRadius:10, border:BORDER }}>
-                    <span style={{ width:8, height:8, borderRadius:"50%", background:BLUE, display:"inline-block", marginTop:6, flexShrink:0 }}/>
-                    <div>
-                      <div style={{ fontSize:14, fontWeight:700, color:SAND }}>{item.title}</div>
-                      <div style={{ fontSize:12, color:DIM, marginTop:2 }}>{item.sub}</div>
-                    </div>
-                  </div>
+              <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>{p("proven","eyebrow","Proven Activations")}</div>
+              <h2 style={{ ...DC, fontSize:"clamp(30px,4.5vw,54px)", lineHeight:0.95, letterSpacing:1, marginBottom:"1.5rem" }}>
+                {p("proven","headline","REAL EVENTS.\nREAL RESULTS.").split("\n").map((line:string, i:number) => (
+                  <span key={i} style={{ display:"block" }}>{line}</span>
                 ))}
+              </h2>
+              <p style={{ fontSize:15, color:MUTED, lineHeight:1.75, marginBottom:"1.5rem", fontWeight:300 }}>{p("proven","subline","Every activation is backed by years of operational experience, municipal relationships, and a team that has done this hundreds of times.")}</p>
+              <div style={{ display:"flex", flexDirection:"column", gap:"0.75rem", marginBottom:"2rem" }}>
+                {[1,2,3,4].map(n => {
+                  const title = p("proven",`item${n}_title`, PROVEN[n-1]?.title||"");
+                  const sub = p("proven",`item${n}_sub`, PROVEN[n-1]?.sub||"");
+                  if (!title) return null;
+                  return (
+                    <div key={n} style={{ display:"flex", alignItems:"flex-start", gap:10, padding:"0.875rem", background:NAVY_CARD, borderRadius:10, border:BORDER }}>
+                      <span style={{ width:8, height:8, borderRadius:"50%", background:BLUE, display:"inline-block", marginTop:6, flexShrink:0 }}/>
+                      <div>
+                        <div style={{ fontSize:14, fontWeight:700, color:SAND }}>{title}</div>
+                        <div style={{ fontSize:12, color:DIM, marginTop:2 }}>{sub}</div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
               <GradientBtn href="/live">See Live Experiences</GradientBtn>
             </div>
             <div style={{ position:"relative", borderRadius:18, overflow:"hidden", height:420 }}>
-              <img src="/img-color-run-1.png" alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
+              <img src={p("proven","image","/img-color-run-1.png")} alt="" style={{ width:"100%", height:"100%", objectFit:"cover" }}/>
               <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(17,24,39,0.85) 0%, transparent 60%)" }}/>
               <div style={{ position:"absolute", bottom:24, left:24, right:24, background:"rgba(17,24,39,0.85)", backdropFilter:"blur(12px)", borderRadius:12, padding:"1.25rem", border:"0.5px solid rgba(226,232,240,0.1)" }}>
-                <div style={{ ...DC, fontSize:20, marginBottom:4 }}>Graffiti Run · Houston</div>
-                <div style={{ fontSize:12, color:MUTED }}>12,000+ participants · Fully operated by FlowState</div>
+                <div style={{ ...DC, fontSize:20, marginBottom:4 }}>{p("proven","image_caption","Graffiti Run · Houston")}</div>
+                <div style={{ fontSize:12, color:MUTED }}>{p("proven","image_sub","12,000+ participants · Fully operated by FlowState")}</div>
               </div>
             </div>
           </div>
@@ -424,20 +433,23 @@ export default function HomePage() {
         <div style={{ maxWidth:1100, margin:"0 auto" }}>
           <div style={{ display:"flex", justifyContent:"space-between", alignItems:"flex-end", marginBottom:"2.5rem", flexWrap:"wrap", gap:"1rem" }}>
             <div>
-              <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>Full-Service Support</div>
-              <h2 style={{ ...DC, fontSize:"clamp(32px,5vw,56px)", lineHeight:0.95, letterSpacing:1 }}>WE HANDLE<br/>EVERYTHING</h2>
+              <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>{p("services","eyebrow","Full-Service Support")}</div>
+              <h2 style={{ ...DC, fontSize:"clamp(32px,5vw,56px)", lineHeight:0.95, letterSpacing:1 }}>{p("services","headline","WE HANDLE\nEVERYTHING").split("\n").map((l:string,i:number)=><span key={i} style={{display:"block"}}>{l}</span>)}</h2>
             </div>
             <GradientBtn href="/services">View All Services</GradientBtn>
           </div>
           <div style={{ display:"grid", gridTemplateColumns:"repeat(3,1fr)", gap:"1rem" }} className="services-grid">
-            {[
-              { icon:"🎟", title:"Ticketing", desc:"End-to-end registration setup, management, and optimization." },
-              { icon:"👥", title:"Event Staffing", desc:"Trained ops crew, safety officers, and event staff." },
-              { icon:"📢", title:"Event Marketing", desc:"Paid social, email, influencer, and local press." },
-              { icon:"📋", title:"Permitting", desc:"City permits, insurance docs, and municipal compliance." },
-              { icon:"🚦", title:"Traffic Control", desc:"Certified officers and full traffic management plans." },
-              { icon:"🗺", title:"Site Planning", desc:"Professional CAD-quality site layouts." },
-            ].map((s,i) => (
+            {[1,2,3,4,5,6].map((n,i) => {
+              const defaults = [
+                {icon:"🎟",title:"Event Operations",desc:"Ticketing, staffing, permitting, traffic control, and site planning — end to end."},
+                {icon:"📱",title:"Destination Marketing",desc:"Social media, influencer, email, press, and destination platform buildout."},
+                {icon:"🎯",title:"Media Buying",desc:"Meta, Google, TikTok, programmatic, and traditional media — $1M+ monthly managed."},
+                {icon:"📋",title:"Permitting & Compliance",desc:"City permits, insurance docs, and municipal compliance handled for you."},
+                {icon:"🤳",title:"Influencer & Content",desc:"Local creators and community voices amplifying every activation."},
+                {icon:"📊",title:"Analytics & Reporting",desc:"Cross-channel attribution, ROAS tracking, and weekly performance reports."},
+              ];
+              const s = { icon:p("services",`card${n}_icon`,defaults[i].icon), title:p("services",`card${n}_title`,defaults[i].title), desc:p("services",`card${n}_desc`,defaults[i].desc) };
+              return (
               <div key={i} style={{ padding:"1.5rem", background:NAVY_CARD, borderRadius:12, border:BORDER, display:"flex", gap:"0.875rem", alignItems:"flex-start" }}>
                 <span style={{ fontSize:22, flexShrink:0 }}>{s.icon}</span>
                 <div>
@@ -445,7 +457,7 @@ export default function HomePage() {
                   <div style={{ fontSize:13, color:MUTED, lineHeight:1.6, fontWeight:300 }}>{s.desc}</div>
                 </div>
               </div>
-            ))}
+            ); })}
           </div>
         </div>
       </section>
@@ -475,9 +487,11 @@ export default function HomePage() {
       <section id="contact" style={{ padding:"5rem 1.5rem", background:NAVY_MID }} className="section-pad">
         <div style={{ maxWidth:660, margin:"0 auto" }}>
           <div style={{ textAlign:"center", marginBottom:"3rem" }}>
-            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>Let's Build Something</div>
-            <h2 style={{ ...DC, fontSize:"clamp(36px,7vw,72px)", lineHeight:0.92, letterSpacing:1, marginBottom:"1rem" }}>READY TO ACTIVATE<br/>YOUR CITY?</h2>
-            <p style={{ fontSize:15, color:MUTED, fontWeight:300 }}>Tell us where you are. We'll respond within 48 hours.</p>
+            <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.16em", textTransform:"uppercase", color:BLUE, marginBottom:"0.75rem" }}>{p("contact","eyebrow","Let's Build Something")}</div>
+            <h2 style={{ ...DC, fontSize:"clamp(36px,7vw,72px)", lineHeight:0.92, letterSpacing:1, marginBottom:"1rem" }}>
+              {p("contact","headline","READY TO ACTIVATE\nYOUR CITY?").split("\n").map((l:string,i:number)=><span key={i} style={{display:"block"}}>{l}</span>)}
+            </h2>
+            <p style={{ fontSize:15, color:MUTED, fontWeight:300 }}>{p("contact","subline","Tell us where you are. We'll respond within 48 hours.")}</p>
           </div>
           <ContactForm/>
         </div>
