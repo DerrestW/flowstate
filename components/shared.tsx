@@ -176,7 +176,7 @@ export function SiteFooter() {
           {[
             { title:"Events", links:[["Urban Slide","/events/urban-slide"],["Mud Runs","/events/mud-runs"],["Color Runs","/events/color-runs"],["5K / Marathons","/events/5k-marathons"],["Conventions","/events/conventions"]] },
             { title:"Seasonal & Permanent", links:[["Light Shows","/seasonal/light-shows"],["Crawfish Festival","/seasonal/crawfish-festival"],["Boat Rentals","/permanent/boat-rentals"],["Donut Boats","/permanent/donut-boat-rentals"],["Live Now","/live"]] },
-            { title:"Services", links:[["Event Operations","/services#event-operations"],["Destination Marketing","/services#destination-marketing"],["Media Buying","/services#media-buying"],["Contact","/#contact"]] },
+            { title:"Services", links:[["Event Operations","/services#event-operations"],["Destination Marketing","/services#destination-marketing"],["Media Buying","/services#media-buying"],["Contact","/#contact"],["Admin Login","/admin"]] },
           ].map(col => (
             <div key={col.title}>
               <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.14em", textTransform:"uppercase", color:DIM, marginBottom:"1rem" }}>{col.title}</div>
