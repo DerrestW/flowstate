@@ -128,11 +128,12 @@ export default function PageEditor() {
   async function save() {
     setSaving(true);
     try {
-      await fetch("/api/page-content", {
+      const r = await fetch("/api/page-content", {
         method:"POST",
         headers:{"Content-Type":"application/json"},
         body: JSON.stringify({ page:"homepage", section:activeSection, data: content[activeSection] }),
       });
+      if (!r.ok) { const e = await r.json(); throw new Error(e.error || "Save failed"); }
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch(e) { console.error(e); }

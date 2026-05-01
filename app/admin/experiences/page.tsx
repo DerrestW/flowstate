@@ -42,7 +42,7 @@ export default function ExperiencesAdmin() {
 
   async function load() {
     try {
-      const r = await fetch("/api/experiences");
+      const r = await fetch("/api/experiences?admin=1");
       const data = await r.json();
       setExperiences(Array.isArray(data) ? data : []);
     } catch(e) { console.error("Load error:", e); }
@@ -54,22 +54,26 @@ export default function ExperiencesAdmin() {
     setSaving(true);
     try {
       if (editing.id) {
-        await fetch("/api/experiences", {
+        const r = await fetch("/api/experiences", {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(editing),
         });
+        const result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
       } else {
-        await fetch("/api/experiences", {
+        const r = await fetch("/api/experiences", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(editing),
         });
+        const result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
       }
       await load();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
-    } catch(e) { console.error("Save error:", e); }
+    } catch(e) { console.error("Save error:", e); alert("Save failed — check console"); }
     finally { setSaving(false); }
   }
 
