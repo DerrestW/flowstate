@@ -61,6 +61,10 @@ export default function ExperiencesAdmin() {
         });
         const result = await r.json();
         if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        // Update list and keep editing panel open with saved data
+        const saved = { ...editing, ...(result.id ? result : {}) };
+        setEditing(saved);
+        setExperiences(p => p.map(e => e.id === editing.id ? saved as Exp : e));
       } else {
         const r = await fetch("/api/experiences", {
           method: "POST",
@@ -69,8 +73,9 @@ export default function ExperiencesAdmin() {
         });
         const result = await r.json();
         if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setEditing(result);
+        setExperiences(p => [...p, result]);
       }
-      await load();
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
     } catch(e) { console.error("Save error:", e); alert("Save failed — check console"); }
