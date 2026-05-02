@@ -28,52 +28,72 @@ export default function TrustLogosAdmin() {
   const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    const stored = localStorage.getItem("flowstate_trust_logos");
-    if (stored) try { setLogos(JSON.parse(stored)); } catch {}
+    fetch("/api/trust-logos")
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setLogos(data); })
+      .catch(() => {});
   }, []);
 
-  function save(items: Logo[]) {
-    localStorage.setItem("flowstate_trust_logos", JSON.stringify(items));
-    setLogos(items);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }
-
-  function saveEditing() {
+  async function saveEditing() {
     if (!editing) return;
-    let updated: Logo[];
-    if (isNew) {
-      updated = [...logos, { ...editing, id: Date.now().toString(), sort_order: logos.length + 1 }];
-    } else {
-      updated = logos.map(l => l.id === editing.id ? editing : l);
-    }
-    save(updated);
-    setEditing(null);
+    setSaved(false);
+    try {
+      let result;
+      if (isNew) {
+        const r = await fetch("/api/trust-logos", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({...editing, sort_order: logos.length + 1}) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setLogos(p => [...p, result]);
+      } else {
+        const r = await fetch("/api/trust-logos", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify(editing) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setLogos(p => p.map(l => l.id === editing.id ? result : l));
+      }
+      setEditing(null);
+      setIsNew(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch(e) { alert("Save failed"); }
   }
 
-  function toggle(id: string) {
-    const updated = logos.map(l => l.id === id ? { ...l, published: !l.published } : l);
-    save(updated);
+  async function toggle(id: string) {
+    const logo = logos.find(l => l.id === id);
+    if (!logo) return;
+    const r = await fetch("/api/trust-logos", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id, published: !logo.published }) });
+    if (r.ok) setLogos(p => p.map(l => l.id === id ? { ...l, published: !l.published } : l));
   }
 
-  function remove(id: string) {
+  async function remove(id: string) {
     if (!confirm("Remove this partner?")) return;
-    save(logos.filter(l => l.id !== id));
-    if (editing?.id === id) setEditing(null);
+    const r = await fetch("/api/trust-logos", { method:"DELETE", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id }) });
+    if (r.ok) { setLogos(p => p.filter(l => l.id !== id)); if (editing?.id === id) setEditing(null); }
   }
 
   function moveUp(i: number) {
     if (i === 0) return;
     const updated = [...logos];
     [updated[i - 1], updated[i]] = [updated[i], updated[i - 1]];
-    save(updated.map((l, idx) => ({ ...l, sort_order: idx + 1 })));
+    (async () => {
+      const reordered = updated.map((l, idx) => ({ ...l, sort_order: idx + 1 }));
+      setLogos(reordered);
+      for (const l of reordered) {
+        await fetch("/api/trust-logos", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: l.id, sort_order: l.sort_order }) });
+      }
+    })();
   }
 
   function moveDown(i: number) {
     if (i === logos.length - 1) return;
     const updated = [...logos];
     [updated[i], updated[i + 1]] = [updated[i + 1], updated[i]];
-    save(updated.map((l, idx) => ({ ...l, sort_order: idx + 1 })));
+    (async () => {
+      const reordered = updated.map((l, idx) => ({ ...l, sort_order: idx + 1 }));
+      setLogos(reordered);
+      for (const l of reordered) {
+        await fetch("/api/trust-logos", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: l.id, sort_order: l.sort_order }) });
+      }
+    })();
   }
 
   return (

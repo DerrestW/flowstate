@@ -32,7 +32,7 @@ type Exp = { id:string; slug:string; title:string; redirect_to?:string; tagline?
 
 export default function ExperiencesAdmin() {
   const [experiences, setExperiences] = useState<Exp[]>([]);
-  const [editing, setEditing] = useState<Partial<Exp>|null>(null);
+  const [editing, setEditing] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -61,10 +61,10 @@ export default function ExperiencesAdmin() {
         });
         const result = await r.json();
         if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
-        // Update list and keep editing panel open with saved data
-        const saved = { ...editing, ...(result.id ? result : {}) };
+        // result IS the full saved DB row - use it as source of truth
+        const saved = result.id ? result : editing;
         setEditing(saved);
-        setExperiences(p => p.map(e => e.id === editing.id ? saved as Exp : e));
+        setExperiences(p => p.map(e => e.id === editing.id ? saved : e));
       } else {
         const r = await fetch("/api/experiences", {
           method: "POST",

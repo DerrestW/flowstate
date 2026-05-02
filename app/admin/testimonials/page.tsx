@@ -11,6 +11,7 @@ export default function TestimonialsAdmin() {
   const [isNew, setIsNew] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -26,14 +27,25 @@ export default function TestimonialsAdmin() {
   async function save() {
     if (!editing) return;
     setSaving(true);
-    if (isNew) {
-      /* TODO: use API */
-    } else {
-      await fetch("/api/testimonials", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: editing.id, ...editing }) });
-    }
-    await load();
-    setEditing(null);
-    setSaving(false);
+    try {
+      let result;
+      if (isNew) {
+        const r = await fetch("/api/testimonials", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(editing) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setItems(p => [...p, result]);
+      } else {
+        const r = await fetch("/api/testimonials", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: editing.id, ...editing }) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setItems(p => p.map(t => t.id === editing.id ? result : t));
+      }
+      setEditing(result);
+      setIsNew(false);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch(e) { alert("Save failed"); }
+    finally { setSaving(false); }
   }
 
   async function deleteItem(id: string) {

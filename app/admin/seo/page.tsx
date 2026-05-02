@@ -87,16 +87,25 @@ export default function SeoAdmin() {
   async function save() {
     if (!editing) return;
     setSaving(true);
-    const existing = records[editing.page_slug];
-    if (existing?.id) {
-      await fetch("/api/seo", { method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id: existing.id, ...editing }) });
-    } else {
-      await fetch("/api/seo", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(editing) });
-    }
-    await load();
-    setSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+    try {
+      const existing = records[editing.page_slug];
+      let result;
+      if (existing?.id) {
+        const r = await fetch("/api/seo", { method: "PATCH", headers: {"Content-Type":"application/json"}, body: JSON.stringify({ id: existing.id, ...editing }) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+      } else {
+        const r = await fetch("/api/seo", { method: "POST", headers: {"Content-Type":"application/json"}, body: JSON.stringify(editing) });
+        result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+      }
+      // Update records map directly without reload
+      setRecords(p => ({ ...p, [editing.page_slug]: result }));
+      setEditing(result);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch(e) { alert("Save failed"); }
+    finally { setSaving(false); }
   }
 
   const pages = ALL_PAGES.filter(p => !search || p.name.toLowerCase().includes(search.toLowerCase()) || p.slug.includes(search));
