@@ -61,8 +61,10 @@ export default function ExperiencesAdmin() {
         });
         const result = await r.json();
         if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
-        // result IS the full saved DB row - use it as source of truth
-        const saved = result.id ? result : editing;
+        // Verify by re-reading from Supabase immediately
+        const verify = await fetch(`/api/experiences?slug=${editing.slug}`);
+        const verified = await verify.json();
+        const saved = (verified && verified.id) ? verified : (result.id ? result : editing);
         setEditing(saved);
         setExperiences(p => p.map(e => e.id === editing.id ? saved : e));
       } else {
@@ -77,7 +79,7 @@ export default function ExperiencesAdmin() {
         setExperiences(p => [...p, result]);
       }
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      setTimeout(() => setSaved(false), 4000);
     } catch(e) { console.error("Save error:", e); alert("Save failed — check console"); }
     finally { setSaving(false); }
   }
@@ -178,7 +180,7 @@ export default function ExperiencesAdmin() {
               )}
             </div>
             <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-              {saved && <span style={{ fontSize:11, color:"#1B5E20", fontWeight:700, padding:"6px 12px", background:"#E8F5E9", borderRadius:8 }}>✓ Saved — page updated live</span>}
+              {saved && <span style={{ fontSize:11, color:"#1B5E20", fontWeight:700, padding:"6px 12px", background:"#E8F5E9", borderRadius:8 }}>✓ Saved to Supabase at {new Date().toLocaleTimeString()}</span>}
               <button onClick={save} disabled={saving} style={{ fontSize:13, fontWeight:700, padding:"9px 22px", borderRadius:100, background:saving?"rgba(6,7,8,0.2)":"#04080F", color:"#F8F6F2", border:"none", cursor:"pointer", fontFamily:"inherit" }}>
                 {saving?"Saving...":"Save Changes"}
               </button>
