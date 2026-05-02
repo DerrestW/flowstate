@@ -28,7 +28,7 @@ export default function TestimonialsAdmin() {
     if (!editing) return;
     setSaving(true);
     try {
-      let result;
+      let result: any;
       if (isNew) {
         const r = await fetch("/api/testimonials", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(editing) });
         result = await r.json();

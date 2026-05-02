@@ -221,7 +221,7 @@ export default function ExperiencesAdmin() {
                 {/* Quick image picks */}
                 <div style={{ display:"flex", flexWrap:"wrap", gap:4, marginTop:8 }}>
                   {Object.values(SLUG_MAP).map(s => (
-                    <button key={s.img} onClick={()=>setEditing(p=>p?{...p,hero_image:s.img}:p)} style={{ fontSize:10, padding:"3px 9px", borderRadius:6, border:`0.5px solid ${editing.hero_image===s.img?"#2196F3":"rgba(6,7,8,0.15)"}`, background:editing.hero_image===s.img?"#E3F2FD":"transparent", color:editing.hero_image===s.img?"#1565C0":"rgba(6,7,8,0.5)", cursor:"pointer", fontFamily:"inherit" }}>
+                    <button key={s.img} onClick={()=>setEditing((p:any)=>p?{...p,hero_image:s.img}:p)} style={{ fontSize:10, padding:"3px 9px", borderRadius:6, border:`0.5px solid ${editing.hero_image===s.img?"#2196F3":"rgba(6,7,8,0.15)"}`, background:editing.hero_image===s.img?"#E3F2FD":"transparent", color:editing.hero_image===s.img?"#1565C0":"rgba(6,7,8,0.5)", cursor:"pointer", fontFamily:"inherit" }}>
                       {s.img.replace("/img-","").replace(".png","")}
                     </button>
                   ))}
@@ -231,33 +231,33 @@ export default function ExperiencesAdmin() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
                 <div>
                   <label style={label}>Title</label>
-                  <input style={input} value={editing.title||""} onChange={e=>setEditing(p=>p?{...p,title:e.target.value}:p)}/>
+                  <input style={input} value={editing.title||""} onChange={e=>setEditing((p:any)=>p?{...p,title:e.target.value}:p)}/>
                 </div>
                 <div>
                   <label style={label}>Tagline <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— shown under title</span></label>
-                  <input style={input} value={editing.tagline||""} onChange={e=>setEditing(p=>p?{...p,tagline:e.target.value}:p)} placeholder="1,000 feet of pure summer"/>
+                  <input style={input} value={editing.tagline||""} onChange={e=>setEditing((p:any)=>p?{...p,tagline:e.target.value}:p)} placeholder="1,000 feet of pure summer"/>
                 </div>
               </div>
 
               <div>
                 <label style={label}>Short Description <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— shown on homepage cards</span></label>
-                <textarea style={{...input, minHeight:70, resize:"vertical"}} value={editing.description||""} onChange={e=>setEditing(p=>p?{...p,description:e.target.value}:p)}/>
+                <textarea style={{...input, minHeight:70, resize:"vertical"}} value={editing.description||""} onChange={e=>setEditing((p:any)=>p?{...p,description:e.target.value}:p)}/>
               </div>
 
               <div>
                 <label style={label}>Full Description <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— shown on the inner page "About This Activation"</span></label>
-                <textarea style={{...input, minHeight:120, resize:"vertical"}} value={editing.long_description||""} onChange={e=>setEditing(p=>p?{...p,long_description:e.target.value}:p)} placeholder="Detailed description shown on the individual page..."/>
+                <textarea style={{...input, minHeight:120, resize:"vertical"}} value={editing.long_description||""} onChange={e=>setEditing((p:any)=>p?{...p,long_description:e.target.value}:p)} placeholder="Detailed description shown on the individual page..."/>
               </div>
 
               <div>
                 <div style={{ display:"flex", justifyContent:"space-between", alignItems:"center", marginBottom:6 }}>
                   <label style={label}>What's Included <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— checklist shown on inner page</span></label>
-                  <button type="button" onClick={()=>setEditing(p=>p?{...p,includes:[...(p.includes||[]),""]}:p)} style={{ fontSize:11, padding:"4px 12px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit" }}>+ Add item</button>
+                  <button type="button" onClick={()=>setEditing((p:any)=>p?{...p,includes:[...(p.includes||[]),""]}:p)} style={{ fontSize:11, padding:"4px 12px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit" }}>+ Add item</button>
                 </div>
                 {(editing.includes||[]).map((item:string, idx:number) => (
                   <div key={idx} style={{ display:"flex", gap:8, marginBottom:8 }}>
-                    <input style={{...input, flex:1}} value={item} onChange={e=>{const arr=[...(editing.includes||[])];arr[idx]=e.target.value;setEditing(p=>p?{...p,includes:arr}:p);}} placeholder="e.g. Full permitting support"/>
-                    <button type="button" onClick={()=>{const arr=(editing.includes||[]).filter((_:string,i:number)=>i!==idx);setEditing(p=>p?{...p,includes:arr}:p);}} style={{ fontSize:12, padding:"6px 10px", borderRadius:8, background:"#FFEBEE", color:"#B71C1C", border:"none", cursor:"pointer", fontFamily:"inherit" }}>✕</button>
+                    <input style={{...input, flex:1}} value={item} onChange={e=>{const arr=[...(editing.includes||[])];arr[idx]=e.target.value;setEditing((p:any)=>p?{...p,includes:arr}:p);}} placeholder="e.g. Full permitting support"/>
+                    <button type="button" onClick={()=>{const arr=(editing.includes||[]).filter((_:string,i:number)=>i!==idx);setEditing((p:any)=>p?{...p,includes:arr}:p);}} style={{ fontSize:12, padding:"6px 10px", borderRadius:8, background:"#FFEBEE", color:"#B71C1C", border:"none", cursor:"pointer", fontFamily:"inherit" }}>✕</button>
                   </div>
                 ))}
                 {(!editing.includes || editing.includes.length===0) && (
@@ -268,32 +268,32 @@ export default function ExperiencesAdmin() {
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
                 <div>
                   <label style={label}>Min Capacity</label>
-                  <input type="number" style={input} value={editing.capacity_min||""} onChange={e=>setEditing(p=>p?{...p,capacity_min:parseInt(e.target.value)||0}:p)} placeholder="500"/>
+                  <input type="number" style={input} value={editing.capacity_min||""} onChange={e=>setEditing((p:any)=>p?{...p,capacity_min:parseInt(e.target.value)||0}:p)} placeholder="500"/>
                 </div>
                 <div>
                   <label style={label}>Max Capacity</label>
-                  <input type="number" style={input} value={editing.capacity_max||""} onChange={e=>setEditing(p=>p?{...p,capacity_max:parseInt(e.target.value)||0}:p)} placeholder="15000"/>
+                  <input type="number" style={input} value={editing.capacity_max||""} onChange={e=>setEditing((p:any)=>p?{...p,capacity_max:parseInt(e.target.value)||0}:p)} placeholder="15000"/>
                 </div>
                 <div>
                   <label style={label}>Duration</label>
-                  <input style={input} value={editing.duration||""} onChange={e=>setEditing(p=>p?{...p,duration:e.target.value}:p)} placeholder="4–8 hours"/>
+                  <input style={input} value={editing.duration||""} onChange={e=>setEditing((p:any)=>p?{...p,duration:e.target.value}:p)} placeholder="4–8 hours"/>
                 </div>
               </div>
 
               <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr 1fr", gap:"1rem" }}>
                 <div>
                   <label style={label}>Starting Price ($)</label>
-                  <input type="number" style={input} value={editing.price_starting||""} onChange={e=>setEditing(p=>p?{...p,price_starting:parseInt(e.target.value)||0}:p)} placeholder="25000"/>
+                  <input type="number" style={input} value={editing.price_starting||""} onChange={e=>setEditing((p:any)=>p?{...p,price_starting:parseInt(e.target.value)||0}:p)} placeholder="25000"/>
                 </div>
                 <div>
                   <label style={label}>Price Unit</label>
-                  <select style={{...input,cursor:"pointer"}} value={editing.price_unit||"per event"} onChange={e=>setEditing(p=>p?{...p,price_unit:e.target.value}:p)}>
+                  <select style={{...input,cursor:"pointer"}} value={editing.price_unit||"per event"} onChange={e=>setEditing((p:any)=>p?{...p,price_unit:e.target.value}:p)}>
                     <option>per event</option><option>per day</option><option>per person</option><option>custom quote</option><option>revenue share</option>
                   </select>
                 </div>
                 <div>
                   <label style={label}>Sort Order</label>
-                  <input type="number" style={input} value={editing.sort_order||0} onChange={e=>setEditing(p=>p?{...p,sort_order:parseInt(e.target.value)||0}:p)}/>
+                  <input type="number" style={input} value={editing.sort_order||0} onChange={e=>setEditing((p:any)=>p?{...p,sort_order:parseInt(e.target.value)||0}:p)}/>
                 </div>
               </div>
 
@@ -302,7 +302,7 @@ export default function ExperiencesAdmin() {
                 <label style={label}>Activation Type <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— controls which homepage tab it appears under</span></label>
                 <div style={{ display:"flex", gap:8 }}>
                   {["event","seasonal","permanent"].map(t => (
-                    <button key={t} type="button" onClick={()=>setEditing(p=>p?{...p,type:t}:p)} style={{ fontSize:12, fontWeight:700, padding:"8px 20px", borderRadius:100, border:`0.5px solid ${(editing.type||"event")===t?"#2196F3":"rgba(6,7,8,0.2)"}`, background:(editing.type||"event")===t?"#E3F2FD":"transparent", color:(editing.type||"event")===t?"#1565C0":"rgba(6,7,8,0.5)", cursor:"pointer", fontFamily:"inherit", textTransform:"capitalize" }}>
+                    <button key={t} type="button" onClick={()=>setEditing((p:any)=>p?{...p,type:t}:p)} style={{ fontSize:12, fontWeight:700, padding:"8px 20px", borderRadius:100, border:`0.5px solid ${(editing.type||"event")===t?"#2196F3":"rgba(6,7,8,0.2)"}`, background:(editing.type||"event")===t?"#E3F2FD":"transparent", color:(editing.type||"event")===t?"#1565C0":"rgba(6,7,8,0.5)", cursor:"pointer", fontFamily:"inherit", textTransform:"capitalize" }}>
                       {t}
                     </button>
                   ))}
@@ -312,20 +312,20 @@ export default function ExperiencesAdmin() {
               {/* Video URL */}
               <div>
                 <label style={label}>YouTube Video URL <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— play button appears on inner page image</span></label>
-                <input style={input} value={editing.video_url||""} onChange={e=>setEditing(p=>p?{...p,video_url:e.target.value}:p)} placeholder="https://www.youtube.com/watch?v=yxdALAzbnqc"/>
+                <input style={input} value={editing.video_url||""} onChange={e=>setEditing((p:any)=>p?{...p,video_url:e.target.value}:p)} placeholder="https://www.youtube.com/watch?v=yxdALAzbnqc"/>
               </div>
 
               <div style={{ display:"flex", gap:"2rem", flexWrap:"wrap" }}>
                 <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13, fontWeight:500 }}>
-                  <input type="checkbox" checked={!!editing.featured} onChange={e=>setEditing(p=>p?{...p,featured:e.target.checked}:p)}/>
+                  <input type="checkbox" checked={!!editing.featured} onChange={e=>setEditing((p:any)=>p?{...p,featured:e.target.checked}:p)}/>
                   Featured on homepage
                 </label>
                 <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13, fontWeight:500 }}>
-                  <input type="checkbox" checked={!!editing.published} onChange={e=>setEditing(p=>p?{...p,published:e.target.checked}:p)}/>
+                  <input type="checkbox" checked={!!editing.published} onChange={e=>setEditing((p:any)=>p?{...p,published:e.target.checked}:p)}/>
                   Published (visible on site)
                 </label>
                 <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13, fontWeight:500 }}>
-                  <input type="checkbox" checked={!!editing.is_live} onChange={e=>setEditing(p=>p?{...p,is_live:e.target.checked}:p)}/>
+                  <input type="checkbox" checked={!!editing.is_live} onChange={e=>setEditing((p:any)=>p?{...p,is_live:e.target.checked}:p)}/>
                   <span>🟢 Currently Live <span style={{ fontSize:11, color:"rgba(6,7,8,0.4)", fontWeight:400 }}>— shows on Live Now page</span></span>
                 </label>
               </div>
@@ -333,7 +333,7 @@ export default function ExperiencesAdmin() {
               {/* Redirect URL for when slug changes or activation deleted */}
               <div style={{ padding:"1rem", background:"rgba(6,7,8,0.03)", borderRadius:10, border:"0.5px solid rgba(6,7,8,0.08)" }}>
                 <label style={label}>Redirect URL <span style={{ fontWeight:400, textTransform:"none", letterSpacing:0 }}>— where to send visitors if this page is unpublished or deleted</span></label>
-                <input style={input} value={editing.redirect_to||"/"} onChange={e=>setEditing(p=>p?{...p,redirect_to:e.target.value}:p)} placeholder="/ or /events or /events/urban-slide"/>
+                <input style={input} value={editing.redirect_to||"/"} onChange={e=>setEditing((p:any)=>p?{...p,redirect_to:e.target.value}:p)} placeholder="/ or /events or /events/urban-slide"/>
               </div>
 
               <div style={{ display:"flex", gap:"0.75rem" }}>

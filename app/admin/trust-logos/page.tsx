@@ -38,7 +38,7 @@ export default function TrustLogosAdmin() {
     if (!editing) return;
     setSaved(false);
     try {
-      let result;
+      let result: any;
       if (isNew) {
         const r = await fetch("/api/trust-logos", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({...editing, sort_order: logos.length + 1}) });
         result = await r.json();
