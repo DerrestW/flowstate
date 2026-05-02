@@ -11,6 +11,7 @@ export default function CitiesAdmin() {
   const [isNew, setIsNew] = useState(false);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
   useEffect(() => { load(); }, []);
 
@@ -26,14 +27,23 @@ export default function CitiesAdmin() {
   async function save() {
     if (!editing) return;
     setSaving(true);
-    if (isNew) {
-      await fetch("/api/cities", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(editing) });
-    } else {
-      await fetch("/api/cities", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: editing.id, ...editing }) });
-    }
-    await load();
-    setEditing(null);
-    setSaving(false);
+    try {
+      if (isNew) {
+        const r = await fetch("/api/cities", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify(editing) });
+        const result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setCities(p => [...p, result]);
+        setEditing(result);
+        setIsNew(false);
+      } else {
+        const r = await fetch("/api/cities", { method:"PATCH", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ id: editing.id, ...editing }) });
+        if (!r.ok) { const e = await r.json(); alert("Save failed: " + (e.error || r.status)); return; }
+        setCities(p => p.map(c => c.id === editing.id ? editing as City : c));
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    } catch(e) { alert("Save failed"); }
+    finally { setSaving(false); }
   }
 
   async function deleteCity(id: string) {

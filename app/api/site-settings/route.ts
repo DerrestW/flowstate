@@ -14,7 +14,19 @@ export async function POST(req: NextRequest) {
   return NextResponse.json(data);
 }
 export async function PATCH(req: NextRequest) {
-  const { id, ...updates } = await req.json();
+  const body = await req.json();
+  // Handle both { id, ...updates } and { settings: Record<key,value> }
+  if (body.settings && typeof body.settings === "object") {
+    // Upsert each key-value pair
+    const rows = Object.entries(body.settings as Record<string,string>).map(([key, value]) => ({
+      key, value, updated_at: new Date().toISOString()
+    }));
+    const { error } = await sb.from("site_settings").upsert(rows, { onConflict: "key" });
+    if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ success: true });
+  }
+  const { id, ...updates } = body;
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
   const { error } = await sb.from("site_settings").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json({ success: true });

@@ -131,3 +131,22 @@ export async function GET() {
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data);
 }
+
+export async function PATCH(req: NextRequest) {
+  const { id, ...updates } = await req.json();
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const { error } = await supabase
+    .from("inquiries")
+    .update(updates)
+    .eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}
+
+export async function DELETE(req: NextRequest) {
+  const { id } = await req.json();
+  if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+  const { error } = await supabase.from("inquiries").delete().eq("id", id);
+  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
+  return NextResponse.json({ success: true });
+}

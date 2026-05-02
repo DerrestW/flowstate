@@ -38,21 +38,44 @@ export default function FormEntriesPage() {
   }
 
   async function updateStatus(id: string, status: string) {
-    /* TODO: use API */
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, status } : e));
-    if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : null);
+    const r = await fetch("/api/inquiries", {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, status }),
+    });
+    if (r.ok) {
+      setEntries(prev => prev.map(e => e.id === id ? { ...e, status } : e));
+      if (selected?.id === id) setSelected(prev => prev ? { ...prev, status } : null);
+    } else {
+      alert("Failed to update status");
+    }
   }
 
   async function saveNotes(id: string) {
     setSaving(true);
-    /* TODO: use API */
-    setEntries(prev => prev.map(e => e.id === id ? { ...e, notes } : e));
-    setSaving(false);
+    try {
+      const r = await fetch("/api/inquiries", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id, notes }),
+      });
+      if (r.ok) {
+        setEntries(prev => prev.map(e => e.id === id ? { ...e, notes } : e));
+        if (selected) setSelected({ ...selected, notes });
+      } else {
+        alert("Failed to save notes");
+      }
+    } finally { setSaving(false); }
   }
 
   async function deleteEntry(id: string) {
     if (!confirm("Delete this form entry permanently?")) return;
-    /* TODO: use API */
+    const r = await fetch("/api/inquiries", {
+      method: "DELETE",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id }),
+    });
+    if (!r.ok) { alert("Failed to delete"); return; }
     setEntries(prev => prev.filter(e => e.id !== id));
     if (selected?.id === id) setSelected(null);
   }
