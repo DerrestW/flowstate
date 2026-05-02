@@ -1,5 +1,5 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const GRAD = "linear-gradient(90deg, #2196F3 0%, #FF6B2B 100%)";
 const BLUE = "#2196F3";
@@ -35,15 +35,44 @@ export default function AdminLiveExperiences() {
   const [editing, setEditing] = useState<LiveExp | null>(null);
   const [isNew, setIsNew] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
 
-  function save() {
+  useEffect(() => {
+    fetch("/api/live-experiences")
+      .then(r => r.json())
+      .then(data => { if (Array.isArray(data)) setExperiences(data); })
+      .catch(() => {});
+  }, []);
+
+  async function save() {
+    if (!editing) return;
     setSaving(true);
-    if (isNew) {
-      setExperiences(prev => [...prev, { ...editing!, id: Date.now().toString() }]);
-    } else {
-      setExperiences(prev => prev.map(e => e.id === editing?.id ? editing! : e));
-    }
-    setTimeout(() => { setSaving(false); setEditing(null); }, 600);
+    try {
+      if (isNew) {
+        const r = await fetch("/api/live-experiences", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editing),
+        });
+        const result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setExperiences(prev => [...prev, result]);
+        setEditing(result);
+        setIsNew(false);
+      } else {
+        const r = await fetch("/api/live-experiences", {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(editing),
+        });
+        const result = await r.json();
+        if (!r.ok) { alert("Save failed: " + (result.error || r.status)); return; }
+        setExperiences(prev => prev.map(e => e.id === editing.id ? editing : e));
+      }
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch(e) { alert("Save failed — check connection"); }
+    finally { setSaving(false); }
   }
 
   function addPricingRow() {
