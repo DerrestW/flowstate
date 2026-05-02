@@ -209,7 +209,7 @@ export default function ExperiencesAdmin() {
                 )}
                 <input style={input} value={editing.hero_image||""} onChange={e=>{
                   const url = e.target.value;
-                  setEditing(p=>{
+                  setEditing((p: any)=>{
                     if(!p) return p;
                     const gallery = [...(p.gallery_images||[])];
                     if(gallery.length===0) gallery.push(url);
