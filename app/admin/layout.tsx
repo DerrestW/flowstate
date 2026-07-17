@@ -11,6 +11,7 @@ const NAV_GROUPS = [
     { href: "/admin", label: "Dashboard", icon: "⊞", exact: true },
     { href: "/admin/forms", label: "Form Entries", icon: "◈" },
     { href: "/admin/inquiries", label: "CRM Pipeline", icon: "◎" },
+    { href: "/admin/prospects", label: "City Prospects", icon: "🎯" },
   ]},
   { label: "Content", items: [
     { href: "/admin/experiences", label: "Activations", icon: "▤" },
