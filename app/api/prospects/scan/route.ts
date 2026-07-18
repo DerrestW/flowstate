@@ -1,140 +1,154 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+export const maxDuration = 60;
+
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-const APIFY_TOKEN = process.env.APIFY_API_TOKEN!;
-const ABSTRACT_KEY = process.env.ABSTRACT_API_KEY;
+const APOLLO_KEY = process.env.APOLLO_API_KEY!;
 
 const TARGET_TITLES = [
-  "special events director","special events coordinator","director of special events",
-  "parks and recreation director","parks director","event manager","city events manager",
-  "procurement manager","procurement director","director of parks","recreation director",
-  "festivals coordinator","community events","city manager","parks manager",
+  "special events director",
+  "special events coordinator",
+  "director of special events",
+  "parks and recreation director",
+  "parks director",
+  "event manager",
+  "procurement manager",
+  "procurement director",
+  "recreation director",
+  "festivals coordinator",
+  "community events manager",
+  "tourism director",
 ];
 
-async function verifyEmail(email: string): Promise<"valid"|"invalid"|"unknown"> {
-  if (!ABSTRACT_KEY) return "unknown";
-  try {
-    const r = await fetch(`https://emailvalidation.abstractapi.com/v1/?api_key=${ABSTRACT_KEY}&email=${encodeURIComponent(email)}`);
-    const d = await r.json();
-    if (d.deliverability === "DELIVERABLE") return "valid";
-    if (d.deliverability === "UNDELIVERABLE") return "invalid";
-    return "unknown";
-  } catch { return "unknown"; }
-}
+async function searchPeople(city: string, state: string): Promise<any[]> {
+  const people: any[] = [];
 
-async function runApifySearch(query: string): Promise<any[]> {
-  // Start the actor run
-  const startRes = await fetch(
-    `https://api.apify.com/v2/acts/apify~google-search-scraper/runs?token=${APIFY_TOKEN}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        queries: query,
-        maxPagesPerQuery: 1,
-        resultsPerPage: 5,
-        mobileResults: false,
-        languageCode: "en",
-        maxConcurrency: 1,
-      }),
-    }
-  );
-  if (!startRes.ok) return [];
-  const run = await startRes.json();
-  const runId = run.data?.id;
-  if (!runId) return [];
+  // Search in batches of titles - params go in URL query string
+  const titlesQuery = TARGET_TITLES.map(t => `person_titles[]=${encodeURIComponent(t)}`).join("&");
+  const locationQuery = `person_locations[]=${encodeURIComponent(`${city}, ${state}, US`)}`;
+  
+  const url = `https://api.apollo.io/api/v1/mixed_people/api_search?${titlesQuery}&${locationQuery}&per_page=25&page=1`;
 
-  // Poll for up to 45 seconds (stay under Vercel's 60s timeout)
-  for (let i = 0; i < 9; i++) {
-    await new Promise(r => setTimeout(r, 5000));
-    const statusRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${APIFY_TOKEN}`);
-    const status = await statusRes.json();
-    if (status.data?.status === "SUCCEEDED") {
-      const dataRes = await fetch(`https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${APIFY_TOKEN}`);
-      return await dataRes.json();
-    }
-    if (["FAILED","ABORTED","TIMED-OUT"].includes(status.data?.status)) break;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "Cache-Control": "no-cache",
+      "X-Api-Key": APOLLO_KEY,
+    },
+  });
+
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`Apollo search failed: ${res.status} ${text.substring(0, 200)}`);
   }
-  return [];
+
+  const data = await res.json();
+  return data?.people || [];
 }
 
-function extractContacts(results: any[], city: string, state: string, titleHint?: string) {
-  const contacts: any[] = [];
-  for (const item of results) {
-    const text = `${item.title||""} ${item.description||""} ${item.url||""}`;
-    const emailMatches = text.match(/[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}/g) || [];
-    const titleMatch = titleHint || TARGET_TITLES.find(t => text.toLowerCase().includes(t));
+async function enrichPerson(personId: string): Promise<string | null> {
+  // Enrich to get email - costs 1 credit per person
+  const res = await fetch("https://api.apollo.io/api/v1/people/match", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "X-Api-Key": APOLLO_KEY,
+    },
+    body: JSON.stringify({ id: personId }),
+  });
 
-    for (const email of emailMatches) {
-      if (email.match(/noreply|no-reply|webmaster@|support@|info@/i)) continue;
-      const domain = email.split("@")[1]?.toLowerCase() || "";
-      if (!domain.includes(".gov") && !domain.includes("hampton") && !domain.includes(city.toLowerCase().replace(/\s/g,""))) continue;
-
-      const namePart = email.split("@")[0].replace(/[._-]/g," ").replace(/\d+/g,"").trim();
-      const name = namePart.split(" ").map((w:string) => w.charAt(0).toUpperCase()+w.slice(1)).join(" ") || "City Official";
-
-      contacts.push({
-        name,
-        email,
-        title: titleMatch || "City Official",
-        department: titleMatch?.includes("park") ? "Parks & Recreation" :
-          titleMatch?.includes("procurement") ? "Procurement" :
-          titleMatch?.includes("event") ? "Special Events" : "City Government",
-        city,
-        state,
-        source_url: item.url || "",
-        email_verified: "unknown",
-        email_status: "uncontacted",
-        notes: `Scraped from: ${(item.url||"").substring(0,80)}`,
-      });
-    }
-  }
-  return contacts;
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.person?.email || null;
 }
-
-export const maxDuration = 55; // Vercel max for hobby plan
 
 export async function POST(req: NextRequest) {
   const { city, state } = await req.json();
-  if (!city || !state) return NextResponse.json({ error: "City and state required" }, { status: 400 });
-
-  const allContacts: any[] = [];
-
-  // Run 2 searches in parallel to stay under timeout
-  const queries = [
-    `"${city}" "${state}" "special events director" site:.gov email`,
-    `"city of ${city}" "${state}" "parks director" OR "procurement director" email contact`,
-  ];
-
-  const results = await Promise.all(queries.map(q => runApifySearch(q)));
-  for (const r of results) {
-    allContacts.push(...extractContacts(r, city, state));
+  if (!city || !state) {
+    return NextResponse.json({ error: "City and state required" }, { status: 400 });
   }
 
-  // Deduplicate by email
-  const seen = new Set<string>();
-  const unique = allContacts.filter(c => { if (seen.has(c.email)) return false; seen.add(c.email); return true; });
-
-  if (unique.length === 0) {
-    return NextResponse.json({ success: true, found: 0, saved: 0, message: "No contacts found. Try a larger city." });
+  if (!APOLLO_KEY) {
+    return NextResponse.json({ error: "Apollo API key not configured" }, { status: 500 });
   }
 
-  // Verify emails (limit to 10 to stay under Abstract free tier)
-  const toVerify = unique.slice(0, 10);
-  const verified = await Promise.all(toVerify.map(async c => ({ ...c, email_verified: await verifyEmail(c.email) })));
-  const valid = verified.filter(c => c.email_verified !== "invalid");
+  try {
+    // Step 1: Search for people (free, no credits)
+    const people = await searchPeople(city, state);
 
-  // Skip already existing emails
-  const { data: existing } = await sb.from("prospects").select("email").in("email", valid.map(c => c.email));
-  const existingSet = new Set((existing||[]).map((e:any) => e.email));
-  const newOnes = valid.filter(c => !existingSet.has(c.email));
+    if (people.length === 0) {
+      return NextResponse.json({
+        success: true, found: 0, saved: 0,
+        message: `No contacts found in Apollo for ${city}, ${state}. Try a larger city or different state.`,
+      });
+    }
 
-  if (newOnes.length > 0) await sb.from("prospects").insert(newOnes);
+    // Step 2: Check which ones already exist
+    const { data: existing } = await sb
+      .from("prospects")
+      .select("email")
+      .not("email", "is", null);
+    const existingEmails = new Set((existing || []).map((e: any) => e.email));
 
-  return NextResponse.json({ success: true, found: unique.length, saved: newOnes.length, skipped: valid.length - newOnes.length });
+    // Step 3: Enrich up to 10 new people to get emails (uses credits)
+    const contacts: any[] = [];
+    let enriched = 0;
+
+    for (const person of people) {
+      if (enriched >= 10) break; // Cap enrichments per scan to save credits
+
+      // Some people already have email in search results
+      let email = person.email || null;
+
+      if (!email && person.id) {
+        email = await enrichPerson(person.id);
+        enriched++;
+        await new Promise(r => setTimeout(r, 200)); // Rate limit
+      }
+
+      if (!email || existingEmails.has(email)) continue;
+
+      contacts.push({
+        name: `${person.first_name || ""} ${person.last_name || ""}`.trim() || "City Official",
+        email: email.toLowerCase(),
+        title: person.title || "City Official",
+        department: getDepartment(person.title || ""),
+        city,
+        state,
+        source_url: person.linkedin_url || "",
+        email_verified: "valid",
+        email_status: "uncontacted",
+        notes: `Apollo: ${person.organization?.name || `City of ${city}`}`,
+      });
+    }
+
+    if (contacts.length > 0) {
+      await sb.from("prospects").insert(contacts);
+    }
+
+    return NextResponse.json({
+      success: true,
+      found: people.length,
+      enriched,
+      saved: contacts.length,
+      skipped: people.length - contacts.length,
+    });
+  } catch (e: any) {
+    console.error("Scan error:", e);
+    return NextResponse.json({ error: e.message || "Scan failed" }, { status: 500 });
+  }
+}
+
+function getDepartment(title: string): string {
+  const t = title.toLowerCase();
+  if (t.includes("park")) return "Parks & Recreation";
+  if (t.includes("procure") || t.includes("purchas")) return "Procurement";
+  if (t.includes("tour")) return "Tourism";
+  return "Special Events";
 }
