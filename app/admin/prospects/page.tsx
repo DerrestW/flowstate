@@ -49,6 +49,15 @@ export default function ProspectsPage() {
 
   // Scan form
   const [scanState, setScanState] = useState("TX");
+  const [scanTitles, setScanTitles] = useState([
+    "special events director",
+    "special events coordinator",
+    "parks and recreation director",
+    "event manager city",
+    "procurement director city",
+    "recreation director",
+  ]);
+  const [newTitle, setNewTitle] = useState("");
   const [scanCity, setScanCity] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
 
@@ -83,7 +92,7 @@ export default function ProspectsPage() {
       const r = await fetch("/api/prospects/scan", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ city: scanCity.trim(), state: scanState }),
+        body: JSON.stringify({ city: scanCity.trim(), state: scanState, titles: scanTitles }),
       });
       const result = await r.json();
       setScanResult(result);
