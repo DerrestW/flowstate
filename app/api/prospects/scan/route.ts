@@ -10,11 +10,13 @@ const sb = createClient(
 
 const APIFY_TOKEN = process.env.APIFY_API_TOKEN!;
 
-const TARGET_TITLES = [
-  "special events", "event coordinator", "event director", "event manager",
-  "parks and recreation", "parks director", "recreation director",
-  "procurement", "purchasing director", "purchasing manager",
-  "community events", "festivals", "tourism", "city manager",
+const TITLE_SEARCHES = [
+  "special events director",
+  "special events coordinator", 
+  "parks and recreation director",
+  "event manager city",
+  "procurement director city",
+  "recreation director",
 ];
 
 function getDepartment(title: string): string {
@@ -25,29 +27,46 @@ function getDepartment(title: string): string {
   return "Special Events";
 }
 
-async function waitForRun(runId: string, maxWaitSecs = 120): Promise<any[]> {
+async function waitForRun(runId: string, maxWaitSecs = 180): Promise<any[]> {
   const polls = Math.ceil(maxWaitSecs / 5);
   for (let i = 0; i < polls; i++) {
     await new Promise(r => setTimeout(r, 5000));
     const res = await fetch(`https://api.apify.com/v2/actor-runs/${runId}?token=${APIFY_TOKEN}`);
     const s = await res.json();
-    if (s?.data?.status === "SUCCEEDED") {
-      const d = await fetch(`https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${APIFY_TOKEN}&limit=100`);
+    const status = s?.data?.status;
+    if (status === "SUCCEEDED") {
+      const d = await fetch(`https://api.apify.com/v2/actor-runs/${runId}/dataset/items?token=${APIFY_TOKEN}&limit=50`);
       return await d.json();
     }
-    if (["FAILED","ABORTED","TIMED-OUT"].includes(s?.data?.status)) return [];
+    if (["FAILED","ABORTED","TIMED-OUT"].includes(status)) {
+      console.error("Run failed:", status, s?.data?.statusMessage);
+      return [];
+    }
   }
   return [];
 }
 
-async function startRun(actorId: string, input: any): Promise<string | null> {
+async function searchLinkedIn(searchQuery: string, location: string): Promise<any[]> {
   const res = await fetch(
-    `https://api.apify.com/v2/acts/${actorId}/runs?token=${APIFY_TOKEN}`,
-    { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(input) }
+    `https://api.apify.com/v2/acts/harvestapi~linkedin-profile-search/runs?token=${APIFY_TOKEN}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        mode: "basic",
+        searchQuery,
+        locations: [location],
+        maxResults: 10,
+        scrapeFullProfile: false,
+      }),
+    }
   );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.data?.id || null;
+  if (!res.ok) {
+    console.error("LinkedIn scraper start failed:", res.status, await res.text());
+    return [];
+  }
+  const run = await res.json();
+  return waitForRun(run?.data?.id, 120);
 }
 
 export async function POST(req: NextRequest) {
@@ -56,149 +75,62 @@ export async function POST(req: NextRequest) {
   if (!APIFY_TOKEN) return NextResponse.json({ error: "Apify token not configured" }, { status: 500 });
 
   try {
-    // Step 1: Google search to find the RIGHT pages
-    const queries = [
-      `site:${city.toLowerCase().replace(/\s+/g,"")}.gov staff directory`,
-      `site:${city.toLowerCase().replace(/\s+/g,"")}.gov contact departments`,
-      `"${city}" "${state}" "special events director" email`,
-      `"${city}" "${state}" "parks director" email`,
-      `"${city}" "${state}" "procurement director" email`,
-    ].join("\n");
+    const location = `${city}, ${state}`;
+    const allPeople: any[] = [];
 
-    const searchRunId = await startRun("apify~google-search-scraper", {
-      queries,
-      maxPagesPerQuery: 2,
-      resultsPerPage: 5,
-    });
-
-    const searchResults = searchRunId ? await waitForRun(searchRunId, 60) : [];
-
-    // Extract URLs from search results
-    const urlsToScrape = new Set<string>();
-    const citySlug = city.toLowerCase().replace(/\s+/g, "");
-
-    // Always include known gov staff pages directly
-    [
-      `https://www.${citySlug}.gov/directory`,
-      `https://www.${citySlug}.gov/staff`,
-      `https://www.${citySlug}.gov/departments`,
-      `https://www.${citySlug}.gov/contact`,
-      `https://www.${citySlug}.gov/government`,
-      `https://www.${citySlug}tx.gov`,
-      `https://www.${citySlug}va.gov`,
-      `https://www.${citySlug}nc.gov`,
-      `https://www.${citySlug}fl.gov`,
-    ].forEach(u => urlsToScrape.add(u));
-
-    // Extract actual page URLs from Google organic results (NOT top-level item.url which is a Google URL)
-    for (const item of searchResults) {
-      const organics = item.organicResults || item.items || [];
-      for (const organic of organics) {
-        const url = organic.url || organic.link || organic.displayedUrl || "";
-        if (!url || url.includes("google.com")) continue;
-        if (url.includes(".gov") || url.includes(citySlug) || url.includes(city.toLowerCase())) {
-          urlsToScrape.add(url);
-        }
-      }
-    }
-    
-    console.log("URLs to scrape:", [...urlsToScrape].slice(0, 5));
-
-    // Step 2: Crawl those pages with the Contact Info Scraper
-    const crawlRunId = await startRun("apify~contact-info-scraper", {
-      startUrls: [...urlsToScrape].slice(0, 20).map(url => ({ url })),
-      maxDepth: 2,
-      maxPagesPerStartUrl: 5,
-      proxyConfiguration: { useApifyProxy: true },
-    });
-
-    const crawlResults = crawlRunId ? await waitForRun(crawlRunId, 150) : [];
-
-    // Step 3: Extract contacts from crawl results
-    const contacts: any[] = [];
-    const emailRegex = /[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/gi;
-
-    for (const page of crawlResults) {
-      const emails = page.emails || [];
-      const text = page.text || page.content || "";
-      const pageUrl = page.url || "";
-
-      for (const email of emails) {
-        if (!email || /noreply|donotreply|webmaster|info@|admin@|spam|example/i.test(email)) continue;
-
-        // Try to find context around this email
-        const idx = text.indexOf(email);
-        const surrounding = idx >= 0 ? text.substring(Math.max(0, idx-300), idx+300) : "";
-
-        // Look for name and title near email
-        const nameMatch = surrounding.match(/([A-Z][a-z]+\s+[A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)/);
-        const titleMatch = TARGET_TITLES.find(t => surrounding.toLowerCase().includes(t));
-
-        const name = nameMatch?.[1] || email.split("@")[0].replace(/[._-]/g, " ").replace(/\b\w/g, (l: string) => l.toUpperCase());
-
-        contacts.push({
-          name,
-          email: email.toLowerCase(),
-          title: titleMatch?.split(" ").map(w => w.charAt(0).toUpperCase()+w.slice(1)).join(" ") || "City Official",
-          department: getDepartment(titleMatch || ""),
-          city, state,
-          source_url: pageUrl,
-          email_verified: "unknown",
-          email_status: "uncontacted",
-          notes: `Scraped: ${pageUrl.substring(0, 100)}`,
-        });
-      }
+    // Run searches for each title sequentially to avoid hammering the API
+    for (const title of TITLE_SEARCHES) {
+      const query = `${title} city of ${city}`;
+      const results = await searchLinkedIn(query, location);
+      allPeople.push(...results);
+      // Small delay between searches
+      await new Promise(r => setTimeout(r, 1000));
     }
 
-    // Also check Google snippets for emails (sometimes they appear)
-    for (const item of searchResults) {
-      const text = `${item.title||""} ${item.description||""} ${item.url||""}`;
-      const emails = text.match(emailRegex) || [];
-      for (const email of emails) {
-        if (/noreply|donotreply|webmaster|info@/i.test(email)) continue;
-        const domain = email.split("@")[1] || "";
-        if (!domain.includes(".gov") && !domain.includes(citySlug)) continue;
-        const titleMatch = TARGET_TITLES.find(t => text.toLowerCase().includes(t));
-        contacts.push({
-          name: email.split("@")[0].replace(/[._\-]/g," ").replace(/\b\w/g,(l:string)=>l.toUpperCase()),
-          email: email.toLowerCase(),
-          title: titleMatch?.split(" ").map(w=>w.charAt(0).toUpperCase()+w.slice(1)).join(" ") || "City Official",
-          department: getDepartment(titleMatch||""),
-          city, state,
-          source_url: item.url||"",
-          email_verified: "unknown",
-          email_status: "uncontacted",
-          notes: `Google snippet: ${item.url?.substring(0,100)||""}`,
-        });
-      }
-    }
-
-    if (contacts.length === 0) {
+    if (allPeople.length === 0) {
       return NextResponse.json({
         success: true, found: 0, saved: 0,
-        debug: {
-          searchResults: searchResults.length,
-          urlsScraped: urlsToScrape.size,
-          crawlResults: crawlResults.length,
-        },
-        message: `No email contacts found for ${city}, ${state}. The city may use contact forms instead of email addresses.`,
+        message: `No LinkedIn profiles found for ${city}, ${state}.`,
       });
     }
 
-    // Deduplicate
+    // Build contacts from LinkedIn profiles
+    const contacts = allPeople
+      .filter((p: any) => p.firstName || p.name || p.fullName)
+      .map((p: any) => ({
+        name: p.fullName || p.name || `${p.firstName || ""} ${p.lastName || ""}`.trim(),
+        email: p.email || p.emailAddress || `unknown-${p.id || Math.random().toString(36).substring(2,8)}@noemail.placeholder`,
+        title: p.headline || p.jobTitle || p.currentPosition || "City Official",
+        department: getDepartment(p.headline || p.jobTitle || ""),
+        city, state,
+        source_url: p.linkedinUrl || p.profileUrl || p.url || "",
+        email_verified: p.email ? "unknown" : "invalid",
+        email_status: "uncontacted",
+        notes: `LinkedIn: ${p.currentCompany || `City of ${city}`}${p.email ? "" : " — no email, use LinkedIn to contact"}`,
+      }));
+
+    // Deduplicate by LinkedIn URL or name
     const seen = new Set<string>();
-    const unique = contacts.filter(c => { if (seen.has(c.email)) return false; seen.add(c.email); return true; });
+    const unique = contacts.filter((c: any) => {
+      const key = c.source_url || c.name;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
 
     // Skip existing
-    const { data: existing } = await sb.from("prospects").select("email");
-    const existingEmails = new Set((existing||[]).map((e:any)=>e.email));
-    const newContacts = unique.filter(c => !existingEmails.has(c.email));
+    const { data: existing } = await sb.from("prospects").select("email, source_url");
+    const existingEmails = new Set((existing||[]).map((e:any) => e.email));
+    const existingUrls = new Set((existing||[]).map((e:any) => e.source_url).filter(Boolean));
+    const newContacts = unique.filter((c: any) => 
+      !existingEmails.has(c.email) && !existingUrls.has(c.source_url)
+    );
 
     if (newContacts.length > 0) await sb.from("prospects").insert(newContacts);
 
     return NextResponse.json({
       success: true,
-      found: contacts.length,
+      found: allPeople.length,
       unique: unique.length,
       saved: newContacts.length,
     });
