@@ -59,7 +59,6 @@ export default function ProspectsPage() {
   ]);
   const [newTitle, setNewTitle] = useState("");
   const [scanCity, setScanCity] = useState("");
-  const [scanTitles, setScanTitles] = useState(["special events director","special events coordinator","parks and recreation director","event manager city","procurement director city","recreation director"]);
   const [newTitle, setNewTitle] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
 
