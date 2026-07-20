@@ -59,7 +59,6 @@ export default function ProspectsPage() {
   ]);
   const [newTitle, setNewTitle] = useState("");
   const [scanCity, setScanCity] = useState("");
-  const [newTitle, setNewTitle] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
 
   // Email form
