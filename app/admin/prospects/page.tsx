@@ -60,7 +60,6 @@ export default function ProspectsPage() {
   const [newTitle, setNewTitle] = useState("");
   const [scanCity, setScanCity] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
-
   // Email form
   const [template, setTemplate] = useState("urban_slide");
   const [sendResult, setSendResult] = useState<any>(null);
