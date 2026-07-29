@@ -64,6 +64,10 @@ export default function ProspectsPage() {
   const [uploadResult, setUploadResult] = useState<any>(null);
   // Email form
   const [template, setTemplate] = useState("urban_slide");
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewSubject, setPreviewSubject] = useState("");
+  const [previewBody, setPreviewBody] = useState("");
+  const [editMode, setEditMode] = useState(false);
   const [sendResult, setSendResult] = useState<any>(null);
 
   // Edit
@@ -124,7 +128,7 @@ export default function ProspectsPage() {
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = cols[i]?.replace(/"/g,"")?.trim() || ""; });
         return {
-          name: obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
+          name: obj["fullname"] || obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
           email: obj["email"] || obj["email address"] || "",
           title: obj["job title"] || obj["title"] || "",
           department: obj["department"] || "",
@@ -147,6 +151,34 @@ export default function ProspectsPage() {
     finally { setUploading(false); }
   }
 
+  async function previewEmail() {
+    const firstId = Array.from(selected)[0];
+    if (!firstId) { alert("Select a contact first"); return; }
+    const prospect = filtered.find(p => p.id === firstId);
+    if (!prospect) return;
+    const city = prospect.city || "Your City";
+    const firstName = (prospect.name || "").split(" ")[0] || "there";
+    const subjects: Record<string,string> = {
+      urban_slide: `Urban Slide in ${city} — 1,000ft Water Slide Activation`,
+      destination_marketing: `Building ${city}'s event audience — FlowState Experiences`,
+      media_buying: `Paid media for ${city} events — $1M+ monthly managed`,
+      full_funnel: `Full-funnel city activation for ${city} — FlowState Experiences`,
+    };
+    setPreviewSubject(subjects[template] || "");
+    setPreviewBody(`Hi ${firstName},
+
+This is the ${template.replace(/_/g," ")} email template personalized for ${city}.
+
+The full branded HTML email will be sent with FlowState styling, stats, and a call to action.
+
+Best,
+Derrest Williams
+Founder, FlowState Experiences
+derrest@cityactivations.com`);
+    setShowPreview(true);
+    setEditMode(false);
+  }
+
   async function sendEmails() {
     if (selected.size === 0) { alert("Select at least one prospect"); return; }
     if (!confirm(`Send "${TEMPLATES.find(t=>t.id===template)?.label}" to ${selected.size} contact${selected.size>1?"s":""}?`)) return;
@@ -156,7 +188,7 @@ export default function ProspectsPage() {
       const r = await fetch("/api/prospects/email", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ prospect_ids: Array.from(selected), template }),
+        body: JSON.stringify({ prospect_ids: Array.from(selected), template, ...(editMode && previewSubject ? { custom_subject: previewSubject, custom_body: previewBody } : {}) }),
       });
       const result = await r.json();
       setSendResult(result);
@@ -298,6 +330,9 @@ export default function ProspectsPage() {
                   ))}
                 </div>
               </div>
+              <button onClick={previewEmail} disabled={selected.size===0} style={{ padding:"9px", width:"100%", borderRadius:100, background:"transparent", color:BLUE, border:`1.5px solid ${BLUE}`, cursor:selected.size===0?"not-allowed":"pointer", fontSize:12, fontWeight:700, fontFamily:"inherit", marginBottom:6, opacity:selected.size===0?0.4:1 }}>
+                👁 Preview &amp; Edit Email
+              </button>
               <button onClick={sendEmails} disabled={sending||selected.size===0} style={{ padding:"10px", borderRadius:100, background:selected.size===0?"rgba(6,7,8,0.06)":BLUE, color:selected.size===0?"rgba(6,7,8,0.3)":"#fff", border:"none", cursor:selected.size===0?"not-allowed":"pointer", fontSize:13, fontWeight:700, fontFamily:"inherit" }}>
                 {sending ? "Sending..." : `📧 Send to ${selected.size || 0} Contact${selected.size!==1?"s":""}`}
               </button>
@@ -413,6 +448,48 @@ export default function ProspectsPage() {
           </div>
         </div>
       </div>
+
+      {showPreview && (
+        <div style={{ position:"fixed", top:0, left:0, right:0, bottom:0, background:"rgba(0,0,0,0.6)", zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:"1.5rem" }}>
+          <div style={{ background:"#fff", borderRadius:16, width:"100%", maxWidth:660, maxHeight:"90vh", overflow:"auto", display:"flex", flexDirection:"column" }}>
+            <div style={{ padding:"1.25rem 1.5rem", borderBottom:"0.5px solid rgba(6,7,8,0.08)", display:"flex", justifyContent:"space-between", alignItems:"center", position:"sticky" as const, top:0, background:"#fff", zIndex:10 }}>
+              <div>
+                <div style={{ fontSize:11, fontWeight:700, color:BLUE, textTransform:"uppercase" as const, letterSpacing:"0.1em", marginBottom:3 }}>Email Preview</div>
+                <div style={{ fontSize:12, color:"rgba(6,7,8,0.45)" }}>Sending to {selected.size} contact{selected.size!==1?"s":""}</div>
+              </div>
+              <div style={{ display:"flex", gap:8 }}>
+                <button onClick={()=>setEditMode(!editMode)} style={{ fontSize:12, padding:"6px 14px", borderRadius:100, border:`1.5px solid ${editMode?"#8B3CF7":BLUE}`, background:editMode?"#8B3CF7":"transparent", color:editMode?"#fff":BLUE, cursor:"pointer", fontFamily:"inherit", fontWeight:700 }}>
+                  {editMode ? "✓ Editing" : "✏️ Edit"}
+                </button>
+                <button onClick={()=>setShowPreview(false)} style={{ background:"none", border:"none", fontSize:20, cursor:"pointer", color:"rgba(6,7,8,0.4)", padding:"0 4px" }}>✕</button>
+              </div>
+            </div>
+            <div style={{ padding:"1.25rem", display:"flex", flexDirection:"column", gap:"0.875rem" }}>
+              <div>
+                <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase" as const, color:"rgba(6,7,8,0.4)", marginBottom:5, display:"block" }}>Subject Line</label>
+                {editMode
+                  ? <input value={previewSubject} onChange={e=>setPreviewSubject(e.target.value)} style={{ width:"100%", padding:"9px 12px", fontSize:13, borderRadius:8, border:"0.5px solid rgba(6,7,8,0.15)", background:"#F8F6F2", fontFamily:"inherit", outline:"none", boxSizing:"border-box" as const }}/>
+                  : <div style={{ padding:"9px 12px", background:"#F8F6F2", borderRadius:8, fontSize:13, fontWeight:600 }}>{previewSubject}</div>
+                }
+              </div>
+              <div>
+                <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase" as const, color:"rgba(6,7,8,0.4)", marginBottom:5, display:"block" }}>Email Body</label>
+                {editMode
+                  ? <textarea value={previewBody} onChange={e=>setPreviewBody(e.target.value)} style={{ width:"100%", minHeight:250, padding:"9px 12px", fontSize:13, borderRadius:8, border:"0.5px solid rgba(6,7,8,0.15)", background:"#F8F6F2", fontFamily:"inherit", outline:"none", resize:"vertical" as const, boxSizing:"border-box" as const, lineHeight:1.6 }}/>
+                  : <pre style={{ padding:"12px", background:"#F8F6F2", borderRadius:8, fontSize:12, lineHeight:1.7, whiteSpace:"pre-wrap" as const, margin:0, fontFamily:"inherit" }}>{previewBody}</pre>
+                }
+              </div>
+              {editMode && <div style={{ fontSize:11, color:"#1565C0", padding:"0.75rem", background:"#E3F2FD", borderRadius:8 }}>Custom content will send to all {selected.size} contacts instead of the template.</div>}
+            </div>
+            <div style={{ padding:"1rem 1.5rem", borderTop:"0.5px solid rgba(6,7,8,0.08)", display:"flex", gap:8, justifyContent:"flex-end", position:"sticky" as const, bottom:0, background:"#fff" }}>
+              <button onClick={()=>setShowPreview(false)} style={{ padding:"9px 20px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Cancel</button>
+              <button onClick={()=>{ setShowPreview(false); sendEmails(); }} disabled={sending} style={{ padding:"9px 24px", borderRadius:100, background:BLUE, color:"#fff", border:"none", cursor:"pointer", fontFamily:"inherit", fontSize:13, fontWeight:700 }}>
+                {sending ? "Sending..." : `Send to ${selected.size} Contact${selected.size!==1?"s":""}`}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
