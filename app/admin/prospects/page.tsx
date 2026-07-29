@@ -113,20 +113,28 @@ export default function ProspectsPage() {
     setUploadResult(null);
     try {
       const text = await file.text();
-      const lines = text.split("\n").filter(l => l.trim());
-      if (lines.length < 2) { alert("File appears empty"); setUploading(false); return; }
-      const headers = lines[0].split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
-      const contacts = lines.slice(1).map(line => {
-        const cols: string[] = [];
-        let cur = "", inQ = false;
-        for (const ch of line) {
-          if (ch === '"') { inQ = !inQ; }
-          else if (ch === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
+      const parseCSV = (raw: string): string[][] => {
+        const rows: string[][] = [];
+        let row: string[] = [], cur = "", inQ = false;
+        const txt = raw.replace(/^\uFEFF/, "").replace(/\r\n/g,"\n").replace(/\r/g,"\n");
+        for (let i = 0; i < txt.length; i++) {
+          const ch = txt[i];
+          if (ch === '"') {
+            if (inQ && txt[i+1] === '"') { cur += '"'; i++; }
+            else { inQ = !inQ; }
+          } else if (ch === ',' && !inQ) { row.push(cur); cur = ""; }
+          else if (ch === '\n' && !inQ) { row.push(cur); rows.push(row); row = []; cur = ""; }
           else { cur += ch; }
         }
-        cols.push(cur.trim());
+        if (cur || row.length) { row.push(cur); rows.push(row); }
+        return rows.filter(r => r.some(cell => cell.trim()));
+      };
+      const rows = parseCSV(text);
+      if (rows.length < 2) { alert("File appears empty"); setUploading(false); return; }
+      const headers = rows[0].map(h => h.replace(/"/g,"").trim().toLowerCase());
+      const contacts = rows.slice(1).map((cols: string[]) => {
         const obj: any = {};
-        headers.forEach((h, i) => { obj[h] = cols[i]?.replace(/"/g,"")?.trim() || ""; });
+        headers.forEach((h: string, i: number) => { obj[h] = (cols[i] || "").replace(/"/g,"").trim(); });
         return {
           name: obj["fullname"] || obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
           email: obj["email"] || obj["email address"] || "",
