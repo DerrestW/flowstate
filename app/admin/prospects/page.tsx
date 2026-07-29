@@ -60,6 +60,8 @@ export default function ProspectsPage() {
   const [newTitle, setNewTitle] = useState("");
   const [scanCity, setScanCity] = useState("");
   const [scanResult, setScanResult] = useState<any>(null);
+  const [uploading, setUploading] = useState(false);
+  const [uploadResult, setUploadResult] = useState<any>(null);
   // Email form
   const [template, setTemplate] = useState("urban_slide");
   const [sendResult, setSendResult] = useState<any>(null);
@@ -99,6 +101,50 @@ export default function ProspectsPage() {
     } catch(e: any) {
       setScanResult({ error: e.message });
     } finally { setScanning(false); }
+  }
+
+
+  async function uploadCSV(file: File) {
+    setUploading(true);
+    setUploadResult(null);
+    try {
+      const text = await file.text();
+      const lines = text.split("\n").filter(l => l.trim());
+      if (lines.length < 2) { alert("File appears empty"); setUploading(false); return; }
+      const headers = lines[0].split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
+      const contacts = lines.slice(1).map(line => {
+        const cols: string[] = [];
+        let cur = "", inQ = false;
+        for (const ch of line) {
+          if (ch === '"') { inQ = !inQ; }
+          else if (ch === "," && !inQ) { cols.push(cur.trim()); cur = ""; }
+          else { cur += ch; }
+        }
+        cols.push(cur.trim());
+        const obj: any = {};
+        headers.forEach((h, i) => { obj[h] = cols[i]?.replace(/"/g,"")?.trim() || ""; });
+        return {
+          name: obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
+          email: obj["email"] || obj["email address"] || "",
+          title: obj["job title"] || obj["title"] || "",
+          department: obj["department"] || "",
+          city: obj["city"] || (obj["city/municipality name"] || "").replace(/^city of /i,"").trim(),
+          state: obj["state"] || "",
+          source_url: obj["linkedin"] || obj["linkedin url"] || "",
+          email_verified: (obj["email status"] || "").toLowerCase() === "good" ? "valid" : "unknown",
+          notes: obj["note"] || obj["notes"] || "",
+        };
+      }).filter(c => c.email && c.email.includes("@"));
+      const r = await fetch("/api/prospects/upload", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ contacts }),
+      });
+      const result = await r.json();
+      setUploadResult(result);
+      if ((result.imported || 0) > 0) await load();
+    } catch(e: any) { setUploadResult({ error: e.message }); }
+    finally { setUploading(false); }
   }
 
   async function sendEmails() {
@@ -214,6 +260,18 @@ export default function ProspectsPage() {
                     `Found ${scanResult.found || 0} contacts · ${scanResult.saved || 0} new saved`}
                 </div>
               )}
+              <div style={{ borderTop:"0.5px solid rgba(6,7,8,0.08)", paddingTop:"0.875rem" }}>
+                <label style={lbl}>Upload Contact List (CSV)</label>
+                <label style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, padding:"10px", borderRadius:100, border:`1.5px dashed ${BLUE}`, cursor:"pointer", fontSize:13, fontWeight:700, color:uploading?"rgba(6,7,8,0.4)":BLUE, fontFamily:"inherit" }}>
+                  {uploading ? "Importing..." : "📁 Upload CSV"}
+                  <input type="file" accept=".csv" style={{ display:"none" }} onChange={e => { const f = e.target.files?.[0]; if (f) uploadCSV(f); e.target.value=""; }} disabled={uploading}/>
+                </label>
+                {uploadResult && (
+                  <div style={{ padding:"0.875rem", borderRadius:8, background:uploadResult.error?"#FFEBEE":"#E8F5E9", fontSize:12, color:uploadResult.error?"#B71C1C":"#1B5E20", marginTop:6 }}>
+                    {uploadResult.error ? `Error: ${uploadResult.error}` : `✓ Imported ${uploadResult.imported} · Skipped ${uploadResult.skipped} duplicates`}
+                  </div>
+                )}
+              </div>
             </div>
           </div>
 
