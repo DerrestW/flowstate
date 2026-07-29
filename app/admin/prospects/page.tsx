@@ -25,6 +25,7 @@ const TEMPLATES = [
   { id:"destination_marketing",label:"📱 Destination Marketing",   color:PURPLE, desc:"Lead with audience building & TDIAC proof" },
   { id:"media_buying",         label:"🎯 Media Buying",            color:ORANGE, desc:"Lead with $1M+ paid media experience" },
   { id:"full_funnel",          label:"⚡ Full Funnel (All Three)", color:"#04080F", desc:"The complete pitch — best for warm contacts" },
+  { id:"follow_up",            label:"📋 Follow-Up (Full Details)", color:"#FF6B2B", desc:"Pricing, wave structure, what\'s included — for interested contacts" },
 ];
 
 type Prospect = {
@@ -68,8 +69,6 @@ export default function ProspectsPage() {
   const [previewSubject, setPreviewSubject] = useState("");
   const [previewBody, setPreviewBody] = useState("");
   const [editMode, setEditMode] = useState(false);
-  const [aiPrompt, setAiPrompt] = useState("");
-  const [aiLoading, setAiLoading] = useState(false);
   const [sendResult, setSendResult] = useState<any>(null);
 
   // Edit
@@ -161,137 +160,23 @@ export default function ProspectsPage() {
     const city = prospect.city || "Your City";
     const firstName = (prospect.name || "").split(" ")[0] || "there";
     const subjects: Record<string,string> = {
-      urban_slide: `Urban Slide in ${city} — 1,000ft Water Slide Activation`,
+      urban_slide: `Bringing a Street Water Slide to ${city} — FlowState Experiences`,
       destination_marketing: `Building ${city}'s event audience — FlowState Experiences`,
-      media_buying: `Paid media for ${city} events — $1M+ monthly managed`,
+      media_buying: `Paid media for ${city} events — FlowState Experiences`,
       full_funnel: `Full-funnel city activation for ${city} — FlowState Experiences`,
+      follow_up: `Urban Slide in ${city} — Full Details & Pricing`,
     };
-    setPreviewSubject(subjects[template] || "");
-    const templateBodies: Record<string,string> = {
-      urban_slide: `Hi ${firstName},
-
-My name is Derrest Williams — I'm the founder of FlowState Experiences, a Houston-based city activation company that produces world-class outdoor events for municipalities across the country.
-
-I'm reaching out because I'd love to bring our flagship activation — the Urban Slide — to ${city}. It's a 1,000-foot modular water slide that shuts down a street and becomes the most-photographed day of the summer for any city.
-
-What we handle end-to-end:
-• Full city permitting and municipal coordination
-• Traffic control and street closure management  
-• Day-of operations crew and safety staff
-• Event marketing and ticket sales
-• Complete teardown and site restoration
-
-Recent results:
-🏆 Hampton, VA — 8,000+ attendees, $70K contract, fully permitted
-🏆 65+ events across 12+ cities | 330,000+ participants
-
-We bring everything — you just show up. I'd love to put together a proposal for ${city} and walk you through what this would look like for your community.
-
-Would you have 20 minutes for a quick call this week?
-
-Best,
-Derrest Williams
-Founder, FlowState Experiences
-derrest@cityactivations.com`,
-
-      destination_marketing: `Hi ${firstName},
-
-My name is Derrest Williams — I'm the founder of FlowState Experiences. We're a full-funnel city activation partner: we run the events and we market the destination.
-
-Most event companies wait for cities to handle their own marketing. We don't. We've built owned platforms and social audiences that promote events before a single ticket goes on sale.
-
-Live proof — ThingsToDoInAustin.com:
-📸 11,400 Instagram followers
-👥 18,000 Facebook Group members  
-📘 10,000 Facebook Page fans
-🎯 39,000+ total owned audience — built from zero
-
-We can build a "Things To Do in ${city}" platform as part of any activation package — giving your city a permanent audience asset that promotes every future event you run.
-
-Would you have 20 minutes to explore what this could look like for ${city}?
-
-Best,
-Derrest Williams
-Founder, FlowState Experiences
-derrest@cityactivations.com`,
-
-      media_buying: `Hi ${firstName},
-
-My name is Derrest Williams — I'm the founder of FlowState Experiences, and I run paid media campaigns for city events and activations across the country.
-
-What sets us apart:
-💰 $1M+ in monthly ad spend managed
-🎯 Meta, Google, TikTok, programmatic & traditional
-📊 Full attribution and ROAS reporting
-🔄 Event ops + media in sync — no agency middleman
-
-Most cities split event operations and marketing across multiple vendors — losing time to coordination and money to duplication. We handle both from one team.
-
-I'd love to put together a media strategy proposal for ${city}'s upcoming events. Would you have 20 minutes this week?
-
-Best,
-Derrest Williams
-Founder, FlowState Experiences
-derrest@cityactivations.com`,
-
-      full_funnel: `Hi ${firstName},
-
-My name is Derrest Williams — I'm the founder of FlowState Experiences, a Houston-based company that activates cities. We produce outdoor events, market destinations, and run paid media — all from one team.
-
-01 — Event Operations
-Urban Slide, mud runs, crawfish festivals, light shows — fully permitted and operated.
-
-02 — Destination Marketing  
-We build the audience before the first ticket goes on sale. 39K+ owned followers across Texas.
-
-03 — Media Buying
-$1M+ monthly managed across Meta, Google, TikTok, and traditional media.
-
-Most cities manage 5–9 vendors to get what we do as one team. I'd love to show you what a full activation strategy for ${city} would look like in one proposal.
-
-Would you have 20 minutes this week?
-
-Best,
-Derrest Williams
-Founder, FlowState Experiences
-derrest@cityactivations.com`,
+    const bodies: Record<string,string> = {
+      urban_slide: `Hi ${firstName},\n\nMy name is Derrest Williams — I'm the founder of FlowState Experiences, and I help cities create events that get people talking, sharing, and coming back.\n\nI'd love to bring The Urban Slide to ${city} — a street water slide that transforms a city block into the most exciting community event of the summer.\n\n▶ Watch it: https://www.youtube.com/watch?v=MWxVJMfFjnA\n\nProven results:\n• Hampton, VA — 8,000+ attendees, sold-out\n• 65+ events across 12+ cities\n• 330,000+ total participants\n• Up to 1,125 participants per day (5 waves x 225 people)\n\nOur team handles full production — setup, staffing, teardown. You focus on your community.\n\nWould you have 20 minutes for a quick call this week?\n\nBest,\nDerrest Williams Jr.\nFounder, FlowState Experiences\n(713) 376-8521\ncityactivations.com`,
+      follow_up: `Hi ${firstName},\n\nThank you for your interest! Here are the full details for The Urban Slide:\n\nPRICING\nOne-Day Event: $65,000\nTwo-Day Event (Recommended): $70,000\nInsurance discount if city provides coverage: -$6,000\nFlexible payment plans across 3-4 installments.\n\nEVENT STRUCTURE\nHours: 10:00 AM - 8:00 PM\nWave duration: 2 hours each\nCapacity: 225 people per wave\nDaily attendance: Up to 1,125 participants\n\nWHAT WE PROVIDE\n- Urban Slide (400-700 ft) — full setup, maintenance & teardown\n- Complete staffing: Event Manager, Operations Manager, crews\n- All equipment: forklifts, generators, speakers, water hoses\n- Travel & logistics for all Urban Slide staff\n- General liability insurance ($1-2M)\n- 1 custom promo video + 3 marketing graphics\n\nHOST RESPONSIBILITIES\n- All required permits\n- Event insurance\n- Ticket sales & check-in\n- Water access, overnight security\n- Police officers, EMS & street barricades\n- DJ & approximately 15 volunteers\n\nREVENUE OPPORTUNITIES\n- Ticket sales (we help with pricing & wave strategy)\n- Sponsorships (banner placements, branded tubes)\n- Merchandise catalog\n- Tourism/parks/recreation grants\n\nI'd love to schedule a 20-minute call to answer questions and discuss how this works for ${city}.\n\nBest,\nDerrest Williams Jr.\n(713) 376-8521\ncityactivations.com`,
+      destination_marketing: `Hi ${firstName},\n\nMy name is Derrest Williams — we run events AND market the destination.\n\nThingsToDoInAustin.com — built from zero:\n- 11,400 Instagram followers\n- 18,000 Facebook Group members\n- 39,000+ total owned audience\n\nWe can build a "Things To Do in ${city}" platform as part of any activation.\n\nWould you have 20 minutes?\n\nBest,\nDerrest Williams Jr.\n(713) 376-8521\ncityactivations.com`,
+      media_buying: `Hi ${firstName},\n\nMy name is Derrest Williams — I run paid media for city events nationwide.\n\n$1M+ monthly ad spend managed\nMeta, Google, TikTok & traditional\nFull attribution & ROAS reporting\n\nWould you have 20 minutes this week?\n\nBest,\nDerrest Williams Jr.\n(713) 376-8521\ncityactivations.com`,
+      full_funnel: `Hi ${firstName},\n\nFlowState Experiences activates cities through events, marketing, and paid media — all from one team.\n\n01 — EVENT OPERATIONS\nUrban Slide (400-700 ft), fully staffed and operated\n\n02 — DESTINATION MARKETING\n39K+ owned followers across Texas, audience built before first ticket\n\n03 — MEDIA BUYING\n$1M+ monthly across Meta, Google, TikTok & traditional\n\nWould you have 20 minutes?\n\nBest,\nDerrest Williams Jr.\n(713) 376-8521\ncityactivations.com`,
     };
-    setPreviewBody(templateBodies[template] || templateBodies.urban_slide);
+    setPreviewSubject(subjects[template] || subjects.urban_slide);
+    setPreviewBody(bodies[template] || bodies.urban_slide);
     setShowPreview(true);
     setEditMode(false);
-  }
-
-
-  async function rewriteWithAI() {
-    if (!aiPrompt.trim()) { alert("Describe what you want the AI to change"); return; }
-    setAiLoading(true);
-    try {
-      const r = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 1000,
-          messages: [{
-            role: "user",
-            content: `You are helping Derrest Williams rewrite a sales email for FlowState Experiences. 
-            
-Current email subject: ${previewSubject}
-Current email body:
-${previewBody}
-
-Instruction: ${aiPrompt}
-
-Rewrite the email body only. Keep it professional, personal, and concise. Sign off as Derrest Williams, Founder of FlowState Experiences, derrest@cityactivations.com. Return only the email body text, no subject line.`
-          }]
-        })
-      });
-      const data = await r.json();
-      const newBody = data.content?.[0]?.text || "";
-      if (newBody) { setPreviewBody(newBody); setEditMode(true); }
-      else alert("AI rewrite failed - try again");
-    } catch(e: any) { alert("AI error: " + e.message); }
-    finally { setAiLoading(false); setAiPrompt(""); }
   }
 
   async function sendEmails() {
@@ -595,16 +480,6 @@ Rewrite the email body only. Keep it professional, personal, and concise. Sign o
                 }
               </div>
               {editMode && <div style={{ fontSize:11, color:"#1565C0", padding:"0.75rem", background:"#E3F2FD", borderRadius:8 }}>Custom content will send to all {selected.size} contacts instead of the template.</div>}
-              <div style={{ borderTop:"0.5px solid rgba(6,7,8,0.08)", paddingTop:"0.875rem" }}>
-                <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase" as const, color:"rgba(6,7,8,0.4)", marginBottom:5, display:"block" }}>✨ AI Rewrite</label>
-                <div style={{ display:"flex", gap:6 }}>
-                  <input value={aiPrompt} onChange={e=>setAiPrompt(e.target.value)} onKeyDown={e=>e.key==="Enter"&&rewriteWithAI()} placeholder='e.g. "make it shorter" or "add a line about summer events"' style={{ flex:1, padding:"9px 12px", fontSize:12, borderRadius:8, border:"0.5px solid rgba(6,7,8,0.15)", background:"#F8F6F2", fontFamily:"inherit", outline:"none" }}/>
-                  <button onClick={rewriteWithAI} disabled={aiLoading} style={{ padding:"9px 16px", borderRadius:8, background:"#8B3CF7", color:"#fff", border:"none", cursor:aiLoading?"not-allowed":"pointer", fontFamily:"inherit", fontSize:12, fontWeight:700, flexShrink:0 }}>
-                    {aiLoading ? "..." : "Rewrite"}
-                  </button>
-                </div>
-                <div style={{ fontSize:10, color:"rgba(6,7,8,0.35)", marginTop:4 }}>Describe what to change — AI will rewrite and you can edit before sending</div>
-              </div>
             </div>
             <div style={{ padding:"1rem 1.5rem", borderTop:"0.5px solid rgba(6,7,8,0.08)", display:"flex", gap:8, justifyContent:"flex-end", position:"sticky" as const, bottom:0, background:"#fff" }}>
               <button onClick={()=>setShowPreview(false)} style={{ padding:"9px 20px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Cancel</button>
