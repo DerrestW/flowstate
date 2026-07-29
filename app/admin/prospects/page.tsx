@@ -111,7 +111,7 @@ export default function ProspectsPage() {
       const text = await file.text();
       const lines = text.split("\n").filter(l => l.trim());
       if (lines.length < 2) { alert("File appears empty"); setUploading(false); return; }
-      const headers = lines[0].replace(/^﻿/,"").split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
+      const headers = lines[0].split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
       const contacts = lines.slice(1).map(line => {
         const cols: string[] = [];
         let cur = "", inQ = false;
@@ -124,7 +124,7 @@ export default function ProspectsPage() {
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = cols[i]?.replace(/"/g,"")?.trim() || ""; });
         return {
-          name: obj["fullname"] || obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
+          name: obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
           email: obj["email"] || obj["email address"] || "",
           title: obj["job title"] || obj["title"] || "",
           department: obj["department"] || "",
@@ -132,8 +132,6 @@ export default function ProspectsPage() {
           state: obj["state"] || "",
           source_url: obj["linkedin"] || obj["linkedin url"] || "",
           email_verified: (obj["email status"] || "").toLowerCase() === "good" ? "valid" : "unknown",
-          _debug_keys: Object.keys(obj).join("|"),
-          _debug_fullname: obj["fullname"] || obj["fullName"] || "NOT FOUND",
           notes: obj["note"] || obj["notes"] || "",
         };
       }).filter(c => c.email && c.email.includes("@"));
