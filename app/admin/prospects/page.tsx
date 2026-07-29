@@ -124,7 +124,7 @@ export default function ProspectsPage() {
         const obj: any = {};
         headers.forEach((h, i) => { obj[h] = cols[i]?.replace(/"/g,"")?.trim() || ""; });
         return {
-          name: obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
+          name: obj["fullname"] || obj["full name"] || obj["name"] || ((obj["first name"] || "") + " " + (obj["last name"] || "")).trim(),
           email: obj["email"] || obj["email address"] || "",
           title: obj["job title"] || obj["title"] || "",
           department: obj["department"] || "",
