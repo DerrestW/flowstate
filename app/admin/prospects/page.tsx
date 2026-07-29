@@ -111,7 +111,7 @@ export default function ProspectsPage() {
       const text = await file.text();
       const lines = text.split("\n").filter(l => l.trim());
       if (lines.length < 2) { alert("File appears empty"); setUploading(false); return; }
-      const headers = lines[0].split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
+      const headers = lines[0].replace(/^﻿/,"").split(",").map(h => h.replace(/"/g,"").trim().toLowerCase());
       const contacts = lines.slice(1).map(line => {
         const cols: string[] = [];
         let cur = "", inQ = false;
