@@ -17,7 +17,7 @@ export async function POST(req: NextRequest) {
     const newContacts = contacts
       .filter((c: any) => c.email && c.email.includes("@") && !existingEmails.has(c.email.toLowerCase()))
       .map((c: any) => ({
-        name: c.name || "Unknown",
+        name: c.fullName || c.name || ((c.firstName || "") + " " + (c.lastName || "")).trim() || "Unknown",
         email: c.email.toLowerCase().trim(),
         title: c.title || "",
         department: c.department || "",
