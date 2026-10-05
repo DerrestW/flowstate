@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
 import { urbanSlidePitch, urbanSlideFollowUp } from "@/lib/email/urbanSlide";
+import { sendOutreach, tagValue } from "@/lib/email/sendOutreach";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -386,6 +387,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to load prospects" }, { status: 500 });
   }
 
+  // Urban Slide pitch / follow-up go through the shared sender (pacing, skip rules, tracking)
+  if (!(custom_subject && custom_body) && (template === "urban_slide" || template === "follow_up" || !template)) {
+    return NextResponse.json(await sendOutreach(sb, prospects, (template || "urban_slide") as "urban_slide" | "follow_up"));
+  }
+
   const results = { sent: 0, failed: 0, skipped: 0, errors: [] as string[] };
 
   for (const prospect of prospects) {
@@ -411,9 +417,9 @@ export async function POST(req: NextRequest) {
         ...("text" in emailContent && emailContent.text ? { text: emailContent.text } : {}),
         headers: { "List-Unsubscribe": "<mailto:derrest@cityactivations.com?subject=Unsubscribe>" },
         tags: [
-          { name: "prospect_id", value: prospect.id },
-          { name: "template", value: template || "custom" },
-          { name: "city", value: prospect.city || "unknown" },
+          { name: "prospect_id", value: tagValue(prospect.id) },
+          { name: "template", value: tagValue(template || "custom") },
+          { name: "city", value: tagValue(prospect.city) },
         ],
       });
 

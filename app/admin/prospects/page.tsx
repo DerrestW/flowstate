@@ -20,6 +20,15 @@ const EMAIL_STATUSES: Record<string, { bg:string; text:string; label:string }> =
   unsubscribed:{ bg:"#FFEBEE", text:"#B71C1C", label:"Unsubscribed" },
 };
 
+// Must match FOLLOWUP_BUSINESS_DAYS used by /api/cron/outreach (default 4)
+const FOLLOWUP_BUSINESS_DAYS = Number(process.env.NEXT_PUBLIC_FOLLOWUP_BUSINESS_DAYS || 4);
+function addBusinessDays(from: Date, n: number) {
+  const d = new Date(from);
+  let added = 0;
+  while (added < n) { d.setDate(d.getDate() + 1); if (d.getDay() !== 0 && d.getDay() !== 6) added++; }
+  return d;
+}
+
 const TEMPLATES = [
   { id:"urban_slide",          label:"🏄 Urban Slide Pitch",       color:BLUE,   desc:"Lead with the flagship event activation" },
   { id:"destination_marketing",label:"📱 Destination Marketing",   color:PURPLE, desc:"Lead with audience building & TDIAC proof" },
@@ -439,11 +448,18 @@ export default function ProspectsPage() {
                     <select value={p.email_status} onChange={e=>updateStatus(p.id,e.target.value)} style={{ fontSize:10, padding:"2px 6px", borderRadius:100, border:`0.5px solid ${sc.text}40`, background:sc.bg, color:sc.text, cursor:"pointer", fontFamily:"inherit", fontWeight:700 }}>
                       {Object.entries(EMAIL_STATUSES).map(([k,v])=><option key={k} value={k}>{v.label}</option>)}
                     </select>
-                    {p.last_emailed_at && (
-                      <div style={{ fontSize:9, color:"rgba(6,7,8,0.3)" }}>
-                        Sent {new Date(p.last_emailed_at).toLocaleDateString("en-US",{month:"short",day:"numeric"})}
-                      </div>
-                    )}
+                    {p.last_emailed_at && (() => {
+                      const sent = new Date(p.last_emailed_at);
+                      const fmt = (d: Date) => d.toLocaleDateString("en-US",{month:"short",day:"numeric"});
+                      const which = p.last_template === "follow_up" ? "Follow-up" : p.last_template === "urban_slide" ? "Pitch" : "Email";
+                      const showDue = p.last_template === "urban_slide" && p.email_status === "emailed";
+                      return (
+                        <div style={{ fontSize:10, lineHeight:1.35, color:"rgba(6,7,8,0.5)" }} title={sent.toLocaleString()}>
+                          {which} sent {fmt(sent)}
+                          {showDue && <div style={{ color:"#C2410C" }}>Follow-up ≈ {fmt(addBusinessDays(sent, FOLLOWUP_BUSINESS_DAYS))}</div>}
+                        </div>
+                      );
+                    })()}
                   </div>
 
                   {/* Delete */}
