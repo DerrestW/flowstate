@@ -25,7 +25,7 @@ const TEMPLATES = [
   { id:"destination_marketing",label:"📱 Destination Marketing",   color:PURPLE, desc:"Lead with audience building & TDIAC proof" },
   { id:"media_buying",         label:"🎯 Media Buying",            color:ORANGE, desc:"Lead with $1M+ paid media experience" },
   { id:"full_funnel",          label:"⚡ Full Funnel (All Three)", color:"#04080F", desc:"The complete pitch — best for warm contacts" },
-  { id:"follow_up",            label:"📋 Follow-Up (Full Details)", color:"#FF6B2B", desc:"Pricing, wave structure, what\'s included — for interested contacts" },
+  { id:"follow_up",            label:"🔁 Urban Slide Follow-Up",   color:"#FF6B2B", desc:"Email 2 — send 4+ days after the pitch to anyone who hasn\'t replied" },
 ];
 
 type Prospect = {
@@ -69,6 +69,7 @@ export default function ProspectsPage() {
   const [previewSubject, setPreviewSubject] = useState("");
   const [previewBody, setPreviewBody] = useState("");
   const [editMode, setEditMode] = useState(false);
+  const [previewHtml, setPreviewHtml] = useState("");
   const [sendResult, setSendResult] = useState<any>(null);
 
   // Edit
@@ -175,8 +176,13 @@ export default function ProspectsPage() {
     };
     setPreviewSubject(subjects[template] || subjects.urban_slide);
     setPreviewBody(bodies[template] || bodies.urban_slide);
+    setPreviewHtml("");
     setShowPreview(true);
     setEditMode(false);
+    try {
+      const r = await fetch(`/api/prospects/email?template=${encodeURIComponent(template)}&prospect_id=${encodeURIComponent(firstId)}`);
+      if (r.ok) { const d = await r.json(); setPreviewSubject(d.subject); setPreviewHtml(d.html); }
+    } catch {}
   }
 
   async function sendEmails() {
@@ -476,7 +482,9 @@ export default function ProspectsPage() {
                 <label style={{ fontSize:10, fontWeight:700, textTransform:"uppercase" as const, color:"rgba(6,7,8,0.4)", marginBottom:5, display:"block" }}>Email Body</label>
                 {editMode
                   ? <textarea value={previewBody} onChange={e=>setPreviewBody(e.target.value)} style={{ width:"100%", minHeight:250, padding:"9px 12px", fontSize:13, borderRadius:8, border:"0.5px solid rgba(6,7,8,0.15)", background:"#F8F6F2", fontFamily:"inherit", outline:"none", resize:"vertical" as const, boxSizing:"border-box" as const, lineHeight:1.6 }}/>
-                  : <pre style={{ padding:"12px", background:"#F8F6F2", borderRadius:8, fontSize:12, lineHeight:1.7, whiteSpace:"pre-wrap" as const, margin:0, fontFamily:"inherit" }}>{previewBody}</pre>
+                  : previewHtml
+                    ? <iframe title="Email preview" srcDoc={previewHtml} style={{ width:"100%", height:560, border:"0.5px solid rgba(6,7,8,0.15)", borderRadius:8, background:"#EEF1F5" }}/>
+                    : <pre style={{ padding:"12px", background:"#F8F6F2", borderRadius:8, fontSize:12, lineHeight:1.7, whiteSpace:"pre-wrap" as const, margin:0, fontFamily:"inherit" }}>{previewBody}</pre>
                 }
               </div>
               {editMode && <div style={{ fontSize:11, color:"#1565C0", padding:"0.75rem", background:"#E3F2FD", borderRadius:8 }}>Custom content will send to all {selected.size} contacts instead of the template.</div>}

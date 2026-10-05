@@ -333,6 +333,19 @@ function getEmailTemplate(template: Template, contact: any): { subject: string; 
   return templates[template] || templates.urban_slide;
 }
 
+// Preview: returns the exact subject + HTML a prospect would receive (admin only via middleware)
+export async function GET(req: NextRequest) {
+  const template = (req.nextUrl.searchParams.get("template") || "urban_slide") as Template;
+  const id = req.nextUrl.searchParams.get("prospect_id");
+  let contact: any = { name: "Derrest Williams", city: "San Marcos", state: "TX" };
+  if (id) {
+    const { data } = await sb.from("prospects").select("*").eq("id", id).single();
+    if (data) contact = data;
+  }
+  const e = getEmailTemplate(template, contact);
+  return NextResponse.json({ subject: e.subject, html: e.html });
+}
+
 export async function POST(req: NextRequest) {
   const { prospect_ids, template, custom_subject, custom_body, test_email } = await req.json();
 
