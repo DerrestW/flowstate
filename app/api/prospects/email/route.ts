@@ -8,6 +8,10 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
+// Sending 80 emails at Resend's ~2/sec limit takes ~1 minute
+export const maxDuration = 300;
+const sleep = (ms: number) => new Promise(r => setTimeout(r, ms));
+
 const FROM_EMAIL = process.env.RESEND_FROM_EMAIL || "derrest@cityactivations.com";
 const FROM_NAME = "Derrest Williams | FlowState Experiences";
 
@@ -365,9 +369,17 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Failed to load prospects" }, { status: 500 });
   }
 
-  const results = { sent: 0, failed: 0, errors: [] as string[] };
+  const results = { sent: 0, failed: 0, skipped: 0, errors: [] as string[] };
 
   for (const prospect of prospects) {
+    // Never re-send the first pitch, and never email anyone who unsubscribed or bounced
+    const status = String(prospect.email_status || "");
+    if (["unsubscribed", "bounced", "replied", "not_interested"].includes(status) ||
+        ((template === "urban_slide" || !template) && status !== "uncontacted" && status !== "")) {
+      results.skipped++;
+      continue;
+    }
+    if (results.sent + results.failed > 0) await sleep(600);
     try {
       const emailContent = custom_subject && custom_body
         ? { subject: custom_subject, html: custom_body.includes("<") ? custom_body : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;font-size:14px;line-height:1.7;max-width:600px;padding:32px;">${custom_body}</pre>` }
