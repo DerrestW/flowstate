@@ -2,10 +2,16 @@
 import { useState, useEffect } from "react";
 import { SiteNav, SiteFooter, GradientBtn, DC, GRAD, BLUE, ORANGE, NAVY, NAVY_MID, NAVY_CARD, SAND, MUTED, DIM, BORDER } from "@/components/shared";
 
-const FALLBACK = [
-  { id:"1", title:"Boats at Discovery Green", location:"Houston, Texas", address:"1500 McKinney St, Houston, TX 77010", status:"NOW OPEN", type:"PERMANENT", open_since:"February 27, 2026", event_date:"", hours_day:"Monday - Sunday", hours_time:"10:00 AM - 10:00 PM", description:"Make a splash in the heart of downtown Houston. Discovery Green transforms into the city's most exciting waterfront playground — featuring motorized bumper boats, four-passenger cruiser boats, and LED-lit clear kayaks.", ticket_url:"https://discoverygreen.com", hero_image:"/img-donut-boat-hut.png", published:true, pricing:[{name:"Cruiser Boats",price:"$25"},{name:"Bumper Boats",price:"$12"},{name:"Kayaks",price:"$12"},{name:"Boating Bundle",price:"$20"}], features:["Four-passenger cruiser boats","Motorized bumper boats","LED-lit clear kayaks","Open 7 days a week","Beginner-friendly"] },
-  { id:"2", title:"Urban Slide — Hampton, VA", location:"Hampton, Virginia", address:"Settlers Landing Road, Hampton, VA", status:"UPCOMING", type:"EVENT", open_since:"", event_date:"July 2025", hours_day:"Event Day Only", hours_time:"10:00 AM - 6:00 PM", description:"FlowState's flagship 500-foot water slide returns to Settlers Landing Road in Hampton, VA.", ticket_url:"", hero_image:"/img-urban-slide.png", published:true, pricing:[{name:"General Admission",price:"TBD"}], features:["1,000-foot modular water slide","Family-friendly","Fully permitted","Est. 10,000 attendees"] },
-];
+type Exp = {
+  id: string; title: string; location: string; address?: string; status: string; type: string;
+  open_since?: string; event_date?: string | null; hours_day?: string; hours_time?: string;
+  description?: string; ticket_url?: string; hero_image?: string; published?: boolean;
+  pricing?: { name: string; price: string; url?: string }[]; features?: string[];
+};
+
+function slugify(t: string) {
+  return (t || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+}
 
 
 // Event dates are free text ("July 26, 2026", "Nov 20, 2026 – Jan 3, 2027").
@@ -32,35 +38,60 @@ function eventRange(text?: string | null): [Date, Date] | null {
 
 function withLiveStatus<T extends { status: string; event_date?: string | null }>(list: T[]): T[] {
   const now = new Date();
-  return list
-    .filter(e => { const r = eventRange(e.event_date); return !r || r[1] >= now; })   // hide finished events
-    .map(e => {
-      const r = eventRange(e.event_date);
-      return r && e.status === "UPCOMING" && r[0] <= now ? { ...e, status: "NOW OPEN" } : e;
-    });
+  return list.map(e => {
+    const r = eventRange(e.event_date);
+    if (r && r[1] < now) return { ...e, status: "PAST" };                       // event has ended
+    if (r && e.status === "UPCOMING" && r[0] <= now) return { ...e, status: "NOW OPEN" }; // running now
+    return e;
+  });
 }
 
 const STATUS_COLORS: Record<string,{bg:string,text:string,dot:string}> = {
   "NOW OPEN": { bg:"rgba(76,175,80,0.12)", text:"#4CAF50", dot:"#4CAF50" },
   "UPCOMING": { bg:"rgba(255,152,0,0.12)", text:"#FF9800", dot:"#FF9800" },
   "SEASONAL": { bg:"rgba(139,60,247,0.12)", text:"#8B3CF7", dot:"#8B3CF7" },
+  "PAST":     { bg:"rgba(226,232,240,0.10)", text:"rgba(226,232,240,0.6)", dot:"rgba(226,232,240,0.6)" },
 };
 
-type Exp = typeof FALLBACK[0];
+const TABS: { id: string; label: string }[] = [
+  { id: "All", label: "All" },
+  { id: "NOW OPEN", label: "Now Open" },
+  { id: "UPCOMING", label: "Upcoming" },
+  { id: "SEASONAL", label: "Seasonal" },
+  { id: "PAST", label: "Past Events" },
+];
+
 
 export default function LivePage() {
-  const [experiences, setExperiences] = useState<Exp[]>(FALLBACK as any);
+  const [experiences, setExperiences] = useState<Exp[]>([]);
+  const [loaded, setLoaded] = useState(false);
   const [selected, setSelected] = useState<Exp|null>(null);
   const [activeImg, setActiveImg] = useState(0);
   const [filter, setFilter] = useState("All");
 
   useEffect(() => {
     fetch("/api/live-experiences").then(r=>r.json()).then(d=>{
-      if (Array.isArray(d) && d.length > 0) setExperiences(d.filter((e:any)=>e.published));
-    }).catch(()=>{});
+      if (Array.isArray(d)) setExperiences(d.filter((e:any)=>e.published));
+    }).catch(()=>{}).finally(()=>setLoaded(true));
   }, []);
 
   useEffect(() => { setActiveImg(0); }, [selected]);
+
+  // Open the pop-up from a link like /live?event=lake-austin-lights
+  useEffect(() => {
+    if (!loaded) return;
+    const slug = new URLSearchParams(window.location.search).get("event");
+    if (!slug) return;
+    const match = withLiveStatus(experiences).find(e => slugify(e.title) === slug || e.id === slug);
+    if (match) setSelected(match);
+  }, [loaded, experiences]);
+
+  useEffect(() => {
+    if (!loaded) return;
+    const url = new URL(window.location.href);
+    if (selected) url.searchParams.set("event", slugify(selected.title)); else url.searchParams.delete("event");
+    window.history.replaceState(null, "", url.toString());
+  }, [selected, loaded]);
 
   // Close modal on escape
   useEffect(() => {
@@ -70,7 +101,12 @@ export default function LivePage() {
   }, []);
 
   const current = withLiveStatus(experiences);
-  const filtered = filter==="All" ? current : current.filter(e=>e.status===filter);
+  const filtered = filter === "All"
+    ? current.filter(e => e.status !== "PAST")
+    : filter === "SEASONAL"
+      ? current.filter(e => e.status !== "PAST" && (e.status === "SEASONAL" || e.type === "SEASONAL"))
+      : current.filter(e => e.status === filter);
+  const emptyText = filter === "PAST" ? "No past events yet." : loaded ? "Nothing here right now — check back soon." : "Loading…";
 
   return (
     <div style={{ fontFamily:"'Barlow',sans-serif", background:NAVY, color:SAND }}>
@@ -102,18 +138,21 @@ export default function LivePage() {
             </div>
             {/* Filters */}
             <div style={{ display:"flex", gap:8, flexWrap:"wrap", marginBottom:"2rem" }} className="live-filters">
-              {["All","NOW OPEN","UPCOMING","SEASONAL"].map(f=>(
-                <button key={f} onClick={()=>setFilter(f)} style={{ fontSize:11, padding:"7px 16px", borderRadius:100, border:"0.5px solid", background:filter===f?GRAD:"transparent", color:filter===f?"#fff":MUTED, borderColor:filter===f?"transparent":"rgba(226,232,240,0.15)", cursor:"pointer", fontFamily:"inherit", fontWeight:filter===f?700:400 }}>{f}</button>
+              {TABS.map(({ id: f, label })=>(
+                <button key={f} onClick={()=>setFilter(f)} aria-pressed={filter===f} style={{ fontSize:11, padding:"7px 16px", borderRadius:100, border:"0.5px solid", background:filter===f?GRAD:"transparent", color:filter===f?"#fff":MUTED, borderColor:filter===f?"transparent":"rgba(226,232,240,0.15)", cursor:"pointer", fontFamily:"inherit", fontWeight:filter===f?700:400, letterSpacing:"0.04em", textTransform:"uppercase" }}>{label}</button>
               ))}
             </div>
 
             {/* Grid */}
             <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fill,minmax(300px,1fr))", gap:"1.5rem" }} className="live-grid">
+              {filtered.length === 0 && (
+                <div style={{ gridColumn:"1/-1", padding:"2rem 0", color:DIM, fontSize:14 }}>{emptyText}</div>
+              )}
               {filtered.map(exp => {
                 const sc = STATUS_COLORS[exp.status] || STATUS_COLORS["UPCOMING"];
                 const pricing = Array.isArray(exp.pricing) ? exp.pricing : [];
                 return (
-                  <div key={exp.id} onClick={()=>setSelected(exp)} style={{ background:NAVY_CARD, borderRadius:16, overflow:"hidden", border:"0.5px solid rgba(226,232,240,0.08)", cursor:"pointer", transition:"transform 0.2s, border-color 0.2s" }}
+                  <div key={exp.id} onClick={()=>setSelected(exp)} style={{ opacity: exp.status==="PAST" ? 0.75 : 1, background:NAVY_CARD, borderRadius:16, overflow:"hidden", border:"0.5px solid rgba(226,232,240,0.08)", cursor:"pointer", transition:"transform 0.2s, border-color 0.2s" }}
                     onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.transform="translateY(-4px)";(e.currentTarget as HTMLElement).style.borderColor=BLUE+"40";}}
                     onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.transform="translateY(0)";(e.currentTarget as HTMLElement).style.borderColor="rgba(226,232,240,0.08)";}}>
                     <div style={{ height:220, overflow:"hidden", position:"relative" }}>
@@ -129,7 +168,7 @@ export default function LivePage() {
                       <div style={{ fontSize:13, color:MUTED, marginBottom:6 }}>📍 {exp.location}</div>
                       {exp.event_date && <div style={{ fontSize:12, color:ORANGE, fontWeight:700, marginBottom:6 }}>📅 {exp.event_date}</div>}
                       {exp.open_since && <div style={{ fontSize:12, color:MUTED, marginBottom:6 }}>🗓 Open since {exp.open_since}</div>}
-                      <div style={{ fontSize:12, color:MUTED, marginBottom:"1rem" }}>🕐 {exp.hours_time}</div>
+                      {exp.hours_time && <div style={{ fontSize:12, color:MUTED, marginBottom:"1rem" }}>🕐 {exp.hours_time}</div>}
                       {pricing.length > 0 && (
                         <div style={{ display:"flex", gap:6, flexWrap:"wrap", marginBottom:"1rem" }}>
                           {pricing.slice(0,2).map((p:any) => (
@@ -139,18 +178,18 @@ export default function LivePage() {
                         </div>
                       )}
                       <button style={{ width:"100%", fontSize:13, fontWeight:700, fontStyle:"italic", padding:"10px", borderRadius:100, background:GRAD, color:"#fff", border:"none", fontFamily:"'Barlow Condensed',sans-serif", cursor:"pointer" }}>
-                        View Details →
+                        {exp.status==="PAST" ? "See Recap →" : "View Details →"}
                       </button>
                     </div>
                   </div>
                 );
               })}
               {/* CTA card */}
-              <div style={{ background:"transparent", borderRadius:16, border:"1.5px dashed rgba(226,232,240,0.12)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"2.5rem 1.5rem", textAlign:"center", gap:"1rem", minHeight:300 }}>
+              {filter !== "PAST" && <div style={{ background:"transparent", borderRadius:16, border:"1.5px dashed rgba(226,232,240,0.12)", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", padding:"2.5rem 1.5rem", textAlign:"center", gap:"1rem", minHeight:300 }}>
                 <div style={{ ...DC, fontSize:28, letterSpacing:1, color:DIM }}>YOUR CITY</div>
                 <p style={{ fontSize:14, color:DIM, fontWeight:300 }}>Want to add an experience to your waterfront or venue?</p>
                 <GradientBtn href="/#contact">Get a Quote</GradientBtn>
-              </div>
+              </div>}
             </div>
           </div>
         </section>
@@ -202,28 +241,32 @@ export default function LivePage() {
                     <div style={{ fontSize:14, fontWeight:700, color:SAND }}>{selected.event_date}</div>
                   </div>
                 )}
-                <div style={{ padding:"0.875rem 0", borderBottom:BORDER, marginBottom:"0.875rem" }}>
+                {(selected.hours_day || selected.hours_time) && <div style={{ padding:"0.875rem 0", borderBottom:BORDER, marginBottom:"0.875rem" }}>
                   <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", color:DIM, marginBottom:6 }}>Hours</div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:13 }}>
                     <span style={{ color:MUTED }}>{selected.hours_day}</span>
                     <span style={{ fontWeight:600, color:SAND }}>{selected.hours_time}</span>
                   </div>
-                </div>
+                </div>}
                 {Array.isArray(selected.pricing) && selected.pricing.length > 0 && (
                   <div style={{ padding:"0.875rem 0", borderBottom:BORDER, marginBottom:"1.25rem" }}>
                     <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", color:DIM, marginBottom:10 }}>Pricing</div>
                     {selected.pricing.map((p:any) => (
-                      <div key={p.name} style={{ display:"flex", justifyContent:"space-between", marginBottom:8, fontSize:13 }}>
+                      <div key={p.name} style={{ display:"flex", justifyContent:"space-between", gap:12, marginBottom:8, fontSize:13 }}>
                         <span style={{ color:MUTED }}>{p.name}</span>
-                        <span style={{ fontWeight:700, color:BLUE }}>{p.price}</span>
+                        {p.url && selected.status!=="PAST"
+                          ? <a href={p.url} target="_blank" rel="noopener noreferrer" style={{ fontWeight:700, color:BLUE, textDecoration:"underline", whiteSpace:"nowrap" }}>{p.price} · Book</a>
+                          : <span style={{ fontWeight:700, color:BLUE, whiteSpace:"nowrap" }}>{p.price}</span>}
                       </div>
                     ))}
                   </div>
                 )}
                 <div style={{ display:"flex", flexDirection:"column", gap:8 }}>
-                  {selected.ticket_url ? (
+                  {selected.status === "PAST" ? (
+                    <div style={{ textAlign:"center", fontSize:13, fontWeight:700, padding:"12px", borderRadius:100, border:"0.5px solid rgba(226,232,240,0.15)", color:DIM }}>This event has ended</div>
+                  ) : selected.ticket_url ? (
                     <a href={selected.ticket_url} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:14, fontWeight:900, fontStyle:"italic", padding:"12px", borderRadius:100, background:GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif", textDecoration:"none" }}>
-                      🎟 Buy Tickets
+                      🎟 Buy Tickets →
                     </a>
                   ) : (
                     <a href="/#contact" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:14, fontWeight:900, fontStyle:"italic", padding:"12px", borderRadius:100, background:GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif", textDecoration:"none" }}>

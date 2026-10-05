@@ -178,17 +178,18 @@ export default function HomePage() {
         {(() => {
           const title = p("hero","next_event_title","Lake Austin Lights");
           const detail = p("hero","next_event_detail","Holiday boat cruise · Austin, TX · Nov 20 – Jan 3");
-          const url = p("hero","next_event_url","https://lakeaustinlights.com/");
+          const url = p("hero","next_event_url","/live?event=lake-austin-lights");
+          const ext = /^https?:/i.test(url) ? { target:"_blank", rel:"noopener noreferrer" } : {};
           return (<>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="hero-badge" aria-label={`Next activation: ${title}. ${detail}`} style={{ position:"absolute", bottom:"5rem", right:"1.5rem", zIndex:2, display:"block", background:"rgba(17,24,39,0.82)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:14, padding:"1.1rem 1.4rem", backdropFilter:"blur(12px)", textDecoration:"none", maxWidth:300 }}>
+            <a href={url} {...ext} className="hero-badge" aria-label={`Next activation: ${title}. ${detail}`} style={{ position:"absolute", bottom:"5rem", right:"1.5rem", zIndex:2, display:"block", background:"rgba(17,24,39,0.82)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:14, padding:"1.1rem 1.4rem", backdropFilter:"blur(12px)", textDecoration:"none", maxWidth:300 }}>
               <div style={{ fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:DIM, marginBottom:4, display:"flex", alignItems:"center", gap:6 }}>
                 <span style={{ width:7, height:7, borderRadius:"50%", background:"#4CAF50", boxShadow:"0 0 0 3px rgba(76,175,80,0.25)" }}/>Next Activation
               </div>
               <div style={{ fontSize:16, fontWeight:700, color:SAND }}>{title}</div>
               <div style={{ fontSize:12, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginTop:2, fontWeight:700 }}>{detail}</div>
-              <div style={{ fontSize:11, fontWeight:700, color:SAND, marginTop:10, letterSpacing:"0.04em" }}>Get tickets →</div>
+              <div style={{ fontSize:11, fontWeight:700, color:SAND, marginTop:10, letterSpacing:"0.04em" }}>Details & tickets →</div>
             </a>
-            <a href={url} target="_blank" rel="noopener noreferrer" className="hero-bar" style={{ display:"none", position:"absolute", left:"1rem", right:"1rem", bottom:"1rem", zIndex:2, alignItems:"center", gap:10, background:"rgba(17,24,39,0.88)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:12, padding:"0.7rem 0.9rem", textDecoration:"none" }}>
+            <a href={url} {...ext} className="hero-bar" style={{ display:"none", position:"absolute", left:"1rem", right:"1rem", bottom:"1rem", zIndex:2, alignItems:"center", gap:10, background:"rgba(17,24,39,0.88)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:12, padding:"0.7rem 0.9rem", textDecoration:"none" }}>
               <span style={{ width:7, height:7, borderRadius:"50%", background:"#4CAF50", flexShrink:0 }}/>
               <span style={{ flex:1, minWidth:0 }}>
                 <span style={{ display:"block", fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:DIM }}>Next Activation</span>
