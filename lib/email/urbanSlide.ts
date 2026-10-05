@@ -38,7 +38,15 @@ function firstNameOf(c: OutreachContact) {
   return n && n.toLowerCase() !== "unknown" ? n : "";
 }
 function cityOf(c: OutreachContact) {
-  return (c.city || "").trim() || "your city";
+  // "City of Abilene" / "Town of Fate" / "Abilene, TX" / "ABILENE" → "Abilene"
+  let city = (c.city || "").trim()
+    .replace(/^(the\s+)?(city|town|village)\s+of\s+/i, "")
+    .replace(/,\s*[A-Za-z]{2}(\s+\d{5})?$/, "")
+    .trim();
+  if (city && city === city.toUpperCase()) {
+    city = city.toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
+  }
+  return city || "your city";
 }
 
 function shell(preheader: string, inner: string) {
