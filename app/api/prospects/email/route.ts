@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { Resend } from "resend";
+import { urbanSlidePitch, urbanSlideFollowUp } from "@/lib/email/urbanSlide";
 
 const sb = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -12,7 +13,10 @@ const FROM_NAME = "Derrest Williams | FlowState Experiences";
 
 type Template = "urban_slide" | "destination_marketing" | "media_buying" | "full_funnel" | "follow_up";
 
-function getEmailTemplate(template: Template, contact: any): { subject: string; html: string } {
+function getEmailTemplate(template: Template, contact: any): { subject: string; html: string; text?: string } {
+  if (template === "urban_slide" || !template) return urbanSlidePitch(contact);
+  if (template === "follow_up") return urbanSlideFollowUp(contact);
+
   const firstName = contact.name?.split(" ")[0] || "there";
   const city = contact.city || "your city";
 
@@ -354,8 +358,11 @@ export async function POST(req: NextRequest) {
       const { error: sendError } = await resend.emails.send({
         from: `${FROM_NAME} <${FROM_EMAIL}>`,
         to: prospect.email,
+        replyTo: FROM_EMAIL,
         subject: emailContent.subject,
         html: emailContent.html,
+        ...("text" in emailContent && emailContent.text ? { text: emailContent.text } : {}),
+        headers: { "List-Unsubscribe": "<mailto:derrest@cityactivations.com?subject=Unsubscribe>" },
         tags: [
           { name: "prospect_id", value: prospect.id },
           { name: "template", value: template || "custom" },
