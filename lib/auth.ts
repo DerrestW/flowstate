@@ -1,9 +1,14 @@
 import { SignJWT, jwtVerify } from "jose";
 import { cookies } from "next/headers";
+import { getJwtSecret } from "@/lib/jwtSecret";
 
-const SECRET = new TextEncoder().encode(
-  process.env.ADMIN_JWT_SECRET || "flowstate-secret-change-in-production-please"
-);
+function requireSecret(): Uint8Array {
+  const secret = getJwtSecret();
+  if (!secret) {
+    throw new Error("ADMIN_JWT_SECRET is not set (needs 16+ characters). Add it in Vercel → Settings → Environment Variables.");
+  }
+  return secret;
+}
 
 export type AdminUser = {
   id: string;
@@ -17,13 +22,15 @@ export async function createSession(user: AdminUser) {
     .setProtectedHeader({ alg: "HS256" })
     .setIssuedAt()
     .setExpirationTime("7d")
-    .sign(SECRET);
+    .sign(requireSecret());
   return token;
 }
 
 export async function verifySession(token: string): Promise<AdminUser | null> {
+  const secret = getJwtSecret();
+  if (!secret) return null;
   try {
-    const { payload } = await jwtVerify(token, SECRET);
+    const { payload } = await jwtVerify(token, secret);
     return payload as unknown as AdminUser;
   } catch {
     return null;

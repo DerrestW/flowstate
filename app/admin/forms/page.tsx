@@ -22,7 +22,7 @@ export default function FormEntriesPage() {
   const [selected, setSelected] = useState<Inquiry | null>(null);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [sortBy, setSortBy] = useState<"newest" | "oldest" | "attendance">("newest");
+  const [sortBy, setSortBy] = useState<"newest" | "oldest">("newest");
   const [saving, setSaving] = useState(false);
   const [notes, setNotes] = useState("");
 
@@ -102,7 +102,6 @@ export default function FormEntriesPage() {
     .filter(e => !search || [e.name, e.email, e.city, e.organization, e.state].some(f => f?.toLowerCase().includes(search.toLowerCase())));
 
   if (sortBy === "oldest") filtered = [...filtered].reverse();
-  if (sortBy === "attendance") filtered = [...filtered].sort((a, b) => (b.expected_attendance || 0) - (a.expected_attendance || 0));
 
   const newCount = entries.filter(e => e.status === "new").length;
 
@@ -145,7 +144,6 @@ export default function FormEntriesPage() {
             <select value={sortBy} onChange={e => setSortBy(e.target.value as any)} style={{ ...input, width: "auto", cursor: "pointer" }}>
               <option value="newest">Newest first</option>
               <option value="oldest">Oldest first</option>
-              <option value="attendance">By attendance</option>
             </select>
           </div>
 
@@ -273,7 +271,6 @@ export default function FormEntriesPage() {
                 ["City", `${selected.city}, ${selected.state}`, null],
                 ["Organization", selected.organization || "—", null],
                 ["Event Date", selected.event_date || "—", null],
-                ["Est. Attendance", selected.expected_attendance ? Number(selected.expected_attendance).toLocaleString() : "—", null],
                 ["Budget Range", selected.budget_range || "—", null],
                 ["Submitted", new Date(selected.created_at).toLocaleDateString("en-US", { month: "long", day: "numeric", year: "numeric" }), null],
               ].map(([label, value, href]) => (

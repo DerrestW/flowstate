@@ -1,7 +1,7 @@
 "use client";
 import { useState, useEffect } from "react";
 import Link from "next/link";
-import { SiteNav, SiteFooter, GradientBtn, DC, GRAD, BLUE, ORANGE, NAVY, NAVY_MID, NAVY_CARD, SAND, MUTED, DIM, BORDER } from "@/components/shared";
+import { SiteNav, SiteFooter, GradientBtn, EventInquiryForm, DC, GRAD, BLUE, ORANGE, NAVY, NAVY_MID, NAVY_CARD, SAND, MUTED, DIM, BORDER } from "@/components/shared";
 
 const FALLBACK_STATS = [
   { value:"9+", label:"Years in Business", sub:"Since 2016" },
@@ -503,60 +503,5 @@ export default function HomePage() {
 }
 
 function ContactForm() {
-  const [form, setForm] = useState({ name:"",email:"",phone:"",organization:"",city:"",state:"",event_date:"",expected_attendance:"",budget_range:"",message:"",experience_interest:[] as string[], website:"" });
-  const [submitted, setSubmitted] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const interests = ["Urban Slide","Mud Run","Color Run","5K/Marathon","Triathlon","Convention","Trade Show","Crawfish Festival","Light Show","Movies on Lake","Donut Boat","Boat Rentals","Paddle Boards","Fundraiser","Street Closure","Ticketing","Staffing","Marketing"];
-  const toggle = (v:string) => setForm(f=>({...f,experience_interest:f.experience_interest.includes(v)?f.experience_interest.filter(x=>x!==v):[...f.experience_interest,v]}));
-  const submit = async (e:React.FormEvent) => {
-    e.preventDefault(); setLoading(true);
-    try { const r = await fetch("/api/inquiries",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)}); if(r.ok) setSubmitted(true); } finally { setLoading(false); }
-  };
-  const IS: React.CSSProperties = { width:"100%", padding:"11px 14px", fontSize:14, borderRadius:10, border:"0.5px solid rgba(226,232,240,0.12)", background:"rgba(226,232,240,0.06)", color:SAND, outline:"none", fontFamily:"'Barlow',sans-serif" };
-  const LS: React.CSSProperties = { fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase" as const, color:MUTED, marginBottom:6, display:"block" };
-  if (submitted) return (
-    <div style={{ textAlign:"center", padding:"3rem", border:"0.5px solid rgba(33,150,243,0.3)", borderRadius:20, background:"rgba(33,150,243,0.06)" }}>
-      <div style={{ ...DC,fontSize:52, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:"0.75rem" }}>YOU'RE IN.</div>
-      <p style={{ color:MUTED }}>We'll be in touch within 48 hours.</p>
-    </div>
-  );
-  return (
-    <form onSubmit={submit} style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
-      <input type="text" name="website" value={form.website} onChange={e=>setForm(f=>({...f,website:e.target.value}))} style={{ display:"none" }} tabIndex={-1} autoComplete="off"/>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Name *</label><input required style={IS} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Alex Johnson"/></div>
-        <div><label style={LS}>Email *</label><input required type="email" style={IS} value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="alex@city.gov"/></div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(220px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Phone</label><input style={IS} value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="(555) 000-0000"/></div>
-        <div><label style={LS}>Organization</label><input style={IS} value={form.organization} onChange={e=>setForm(f=>({...f,organization:e.target.value}))} placeholder="City of Hampton"/></div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:"1rem" }}>
-        <div><label style={LS}>City *</label><input required style={IS} value={form.city} onChange={e=>setForm(f=>({...f,city:e.target.value}))} placeholder="Houston"/></div>
-        <div><label style={LS}>State *</label><input required style={IS} value={form.state} onChange={e=>setForm(f=>({...f,state:e.target.value}))} placeholder="TX" maxLength={2}/></div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Event Date</label><input type="date" style={IS} value={form.event_date} onChange={e=>setForm(f=>({...f,event_date:e.target.value}))}/></div>
-        <div><label style={LS}>Est. Attendance</label><input type="number" style={IS} value={form.expected_attendance} onChange={e=>setForm(f=>({...f,expected_attendance:e.target.value}))} placeholder="5,000"/></div>
-        <div><label style={LS}>Budget</label>
-          <select style={{...IS,cursor:"pointer"}} value={form.budget_range} onChange={e=>setForm(f=>({...f,budget_range:e.target.value}))}>
-            <option value="">Select...</option><option>Under $25K</option><option>$25K–$50K</option><option>$50K–$100K</option><option>$100K+</option>
-          </select>
-        </div>
-      </div>
-      <div><label style={LS}>What are you interested in?</label>
-        <div style={{ display:"flex", flexWrap:"wrap", gap:6 }}>
-          {interests.map(v=>{const a=form.experience_interest.includes(v);return(
-            <button type="button" key={v} onClick={()=>toggle(v)} style={{ fontSize:11, padding:"5px 12px", borderRadius:100, background:a?"rgba(33,150,243,0.18)":"transparent", color:a?SAND:MUTED, border:`0.5px solid ${a?"rgba(33,150,243,0.5)":"rgba(226,232,240,0.15)"}`, fontFamily:"inherit", transition:"all 0.15s" }}>{v}</button>
-          );})}
-        </div>
-      </div>
-      <div><label style={LS}>Tell us about your vision</label>
-        <textarea style={{...IS,minHeight:90,resize:"vertical"}} value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))} placeholder="Tell us about the venue, expected turnout, and what you're imagining..."/>
-      </div>
-      <button type="submit" disabled={loading} style={{ fontSize:15, fontWeight:900, fontStyle:"italic", letterSpacing:"0.06em", textTransform:"uppercase", padding:"15px", borderRadius:100, border:"none", background:loading?"rgba(33,150,243,0.4)":GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif" }}>
-        {loading?"Sending...":"Submit Inquiry →"}
-      </button>
-    </form>
-  );
+  return <EventInquiryForm showInterests/>;
 }

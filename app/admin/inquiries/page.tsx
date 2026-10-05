@@ -141,7 +141,6 @@ export default function InquiriesPage() {
               { label: "Organization", value: selected.organization || "—" },
               { label: "Location", value: `${selected.city}, ${selected.state}` },
               { label: "Event Date", value: selected.event_date || "—" },
-              { label: "Attendance", value: selected.expected_attendance ? selected.expected_attendance.toLocaleString() : "—" },
               { label: "Budget", value: selected.budget_range || "—" },
               { label: "Submitted", value: new Date(selected.created_at).toLocaleDateString() },
             ].map(f => (

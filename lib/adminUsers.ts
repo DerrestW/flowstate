@@ -22,7 +22,6 @@ export function getAdminUsers(): AdminUserRecord[] {
       name: "Derrest Williams",
       role: "super_admin",
       // This hash is generated from the ADMIN_PASSWORD env var at runtime
-      // Set ADMIN_PASSWORD=Alphatauomega37! in your .env.local and Vercel
       passwordHash: process.env.ADMIN_PASSWORD_HASH || "",
       active: true,
     },

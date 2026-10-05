@@ -211,53 +211,87 @@ export function SectionHeading({ children, light=false }: { children: React.Reac
   return <h2 style={{ ...DC, fontSize:"clamp(32px,4.5vw,58px)", lineHeight:0.95, letterSpacing:1, color: light ? "#04080F" : SAND, marginBottom:"1rem" }}>{children}</h2>;
 }
 
-export function EventInquiryForm({ defaultExperience }: { defaultExperience?: string }) {
-  const [form, setForm] = useState({ name:"",email:"",phone:"",organization:"",city:"",state:"",event_date:"",expected_attendance:"",budget_range:"",message:"",experience_interest: defaultExperience?[defaultExperience]:[] as string[], website:"" });
+const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
+const INTEREST_OPTIONS = ["Urban Slide","Mud Run","Color Run","5K/Marathon","Triathlon","Convention","Trade Show","Crawfish Festival","Light Show","Movies on Lake","Donut Boat","Boat Rentals","Paddle Boards","Fundraiser","Street Closure","Ticketing","Staffing","Marketing"];
+
+export function EventInquiryForm({ defaultExperience, showInterests=false }: { defaultExperience?: string; showInterests?: boolean }) {
+  const [form, setForm] = useState({ name:"",email:"",phone:"",organization:"",city:"",state:"",event_date:"",budget_range:"",message:"",experience_interest: defaultExperience?[defaultExperience]:[] as string[], website:"" });
   const [submitted, setSubmitted] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string|null>(null);
+  const [startedAt] = useState(() => Date.now()); // time-trap: bots submit instantly
+  const set = (k: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>) => setForm(f=>({...f,[k]:e.target.value}));
+  const toggle = (v:string) => setForm(f=>({...f,experience_interest:f.experience_interest.includes(v)?f.experience_interest.filter(x=>x!==v):[...f.experience_interest,v]}));
   const submit = async (e: React.FormEvent) => {
-    e.preventDefault(); setLoading(true);
-    try { const r = await fetch("/api/inquiries",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(form)}); if(r.ok) setSubmitted(true); } finally { setLoading(false); }
+    e.preventDefault(); setLoading(true); setError(null);
+    try {
+      const r = await fetch("/api/inquiries",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({ ...form, elapsed_ms: Date.now()-startedAt })});
+      if (r.ok) { setSubmitted(true); return; }
+      const d = await r.json().catch(()=>({}));
+      setError(d.error || "Something went wrong. Please try again.");
+    } catch {
+      setError("We couldn't reach the server. Check your connection and try again.");
+    } finally { setLoading(false); }
   };
-  const IS: React.CSSProperties = { width:"100%", padding:"11px 14px", fontSize:14, borderRadius:10, border:"0.5px solid rgba(226,232,240,0.12)", background:"rgba(226,232,240,0.06)", color:SAND, outline:"none", fontFamily:"'Barlow',sans-serif" };
-  const LS: React.CSSProperties = { fontSize:10, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase" as const, color:MUTED, marginBottom:6, display:"block" };
+  const today = new Date().toISOString().slice(0,10);
+  const IS: React.CSSProperties = { width:"100%", padding:"12px 14px", fontSize:15, borderRadius:10, border:"0.5px solid rgba(226,232,240,0.18)", background:"rgba(226,232,240,0.06)", color:SAND, fontFamily:"'Barlow',sans-serif" };
+  const LS: React.CSSProperties = { fontSize:11, fontWeight:700, letterSpacing:"0.12em", textTransform:"uppercase" as const, color:MUTED, marginBottom:6, display:"block" };
+  const req = <span aria-hidden="true" style={{ color:ORANGE }}> *</span>;
   if (submitted) return (
-    <div style={{ textAlign:"center", padding:"3rem 2rem", border:"0.5px solid rgba(33,150,243,0.3)", borderRadius:20, background:"rgba(33,150,243,0.06)" }}>
-      <div style={{ ...DC,fontSize:48, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:"0.75rem" }}>YOU'RE IN.</div>
-      <p style={{ color:MUTED }}>We'll be in touch within 48 hours.</p>
+    <div role="status" style={{ textAlign:"center", padding:"3rem 2rem", border:"0.5px solid rgba(33,150,243,0.3)", borderRadius:20, background:"rgba(33,150,243,0.06)" }}>
+      <div style={{ ...DC,fontSize:48, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginBottom:"0.75rem" }}>YOU&apos;RE IN.</div>
+      <p style={{ color:MUTED, margin:0 }}>Thanks, {form.name.split(" ")[0] || "friend"}. We&apos;ll reply to <strong style={{ color:SAND }}>{form.email}</strong> within 48 hours.</p>
     </div>
   );
   return (
-    <form onSubmit={submit} style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
-      {/* Honeypot - hidden from humans, bots fill it */}
-      <input type="text" name="website" value={form.website} onChange={e=>setForm(f=>({...f,website:e.target.value}))} style={{ display:"none" }} tabIndex={-1} autoComplete="off"/>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Name *</label><input required style={IS} value={form.name} onChange={e=>setForm(f=>({...f,name:e.target.value}))} placeholder="Alex Johnson"/></div>
-        <div><label style={LS}>Email *</label><input required type="email" style={IS} value={form.email} onChange={e=>setForm(f=>({...f,email:e.target.value}))} placeholder="alex@city.gov"/></div>
+    <form onSubmit={submit} noValidate={false} style={{ display:"flex", flexDirection:"column", gap:"1.25rem" }}>
+      {/* Honeypot: off-screen (not display:none, which many bots skip). Humans never see or tab to it. */}
+      <div aria-hidden="true" style={{ position:"absolute", left:"-10000px", top:"auto", width:1, height:1, overflow:"hidden" }}>
+        <label htmlFor="inq-website">Website</label>
+        <input id="inq-website" type="text" name="website" value={form.website} onChange={set("website")} tabIndex={-1} autoComplete="off"/>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Phone</label><input style={IS} value={form.phone} onChange={e=>setForm(f=>({...f,phone:e.target.value}))} placeholder="(555) 000-0000"/></div>
-        <div><label style={LS}>Organization</label><input style={IS} value={form.organization} onChange={e=>setForm(f=>({...f,organization:e.target.value}))} placeholder="City of Hampton"/></div>
+        <div><label htmlFor="inq-name" style={LS}>Name{req}</label><input id="inq-name" required maxLength={100} autoComplete="name" style={IS} value={form.name} onChange={set("name")} placeholder="Alex Johnson"/></div>
+        <div><label htmlFor="inq-email" style={LS}>Work email{req}</label><input id="inq-email" required type="email" maxLength={200} autoComplete="email" inputMode="email" style={IS} value={form.email} onChange={set("email")} placeholder="alex@city.gov"/></div>
+      </div>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(200px,1fr))", gap:"1rem" }}>
+        <div><label htmlFor="inq-phone" style={LS}>Phone</label><input id="inq-phone" type="tel" maxLength={30} autoComplete="tel" inputMode="tel" style={IS} value={form.phone} onChange={set("phone")} placeholder="(555) 000-0000"/></div>
+        <div><label htmlFor="inq-org" style={LS}>Organization</label><input id="inq-org" maxLength={200} autoComplete="organization" style={IS} value={form.organization} onChange={set("organization")} placeholder="City of Hampton"/></div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"2fr 1fr", gap:"1rem" }}>
-        <div><label style={LS}>City *</label><input required style={IS} value={form.city} onChange={e=>setForm(f=>({...f,city:e.target.value}))} placeholder="Houston"/></div>
-        <div><label style={LS}>State *</label><input required style={IS} value={form.state} onChange={e=>setForm(f=>({...f,state:e.target.value}))} placeholder="TX" maxLength={2}/></div>
-      </div>
-      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(140px,1fr))", gap:"1rem" }}>
-        <div><label style={LS}>Event Date</label><input type="date" style={IS} value={form.event_date} onChange={e=>setForm(f=>({...f,event_date:e.target.value}))}/></div>
-        <div><label style={LS}>Est. Attendance</label><input type="number" style={IS} value={form.expected_attendance} onChange={e=>setForm(f=>({...f,expected_attendance:e.target.value}))} placeholder="5,000"/></div>
-        <div><label style={LS}>Budget Range</label>
-          <select style={{...IS,cursor:"pointer"}} value={form.budget_range} onChange={e=>setForm(f=>({...f,budget_range:e.target.value}))}>
-            <option value="">Select...</option><option>Under $25K</option><option>$25K–$50K</option><option>$50K–$100K</option><option>$100K+</option>
+        <div><label htmlFor="inq-city" style={LS}>City{req}</label><input id="inq-city" required maxLength={100} autoComplete="address-level2" style={IS} value={form.city} onChange={set("city")} placeholder="Houston"/></div>
+        <div><label htmlFor="inq-state" style={LS}>State{req}</label>
+          <select id="inq-state" required autoComplete="address-level1" style={{...IS,cursor:"pointer"}} value={form.state} onChange={set("state")}>
+            <option value="">—</option>{US_STATES.map(s=><option key={s} value={s}>{s}</option>)}
           </select>
         </div>
       </div>
-      <div><label style={LS}>Tell us about your vision</label>
-        <textarea style={{...IS,minHeight:100,resize:"vertical"}} value={form.message} onChange={e=>setForm(f=>({...f,message:e.target.value}))} placeholder="Tell us about the venue, expected turnout, and what you're imagining..."/>
+      <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:"1rem" }}>
+        <div><label htmlFor="inq-date" style={LS}>Target event date</label><input id="inq-date" type="date" min={today} style={IS} value={form.event_date} onChange={set("event_date")}/></div>
+        <div><label htmlFor="inq-budget" style={LS}>Budget range</label>
+          <select id="inq-budget" style={{...IS,cursor:"pointer"}} value={form.budget_range} onChange={set("budget_range")}>
+            <option value="">Not sure yet</option><option>Under $25K</option><option>$25K–$50K</option><option>$50K–$100K</option><option>$100K+</option>
+          </select>
+        </div>
       </div>
-      <button type="submit" disabled={loading} style={{ fontSize:15, fontWeight:900, fontStyle:"italic", letterSpacing:"0.06em", textTransform:"uppercase", padding:"15px", borderRadius:100, border:"none", background:loading?"rgba(33,150,243,0.4)":GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif" }}>
+      {showInterests && (
+        <fieldset style={{ border:"none", padding:0, margin:0 }}>
+          <legend style={LS}>What are you interested in?</legend>
+          <div style={{ display:"flex", flexWrap:"wrap", gap:8 }}>
+            {INTEREST_OPTIONS.map(v=>{const a=form.experience_interest.includes(v);return(
+              <button type="button" key={v} aria-pressed={a} onClick={()=>toggle(v)} style={{ fontSize:12, padding:"7px 14px", borderRadius:100, cursor:"pointer", background:a?"rgba(33,150,243,0.18)":"transparent", color:a?SAND:MUTED, border:`0.5px solid ${a?"rgba(33,150,243,0.6)":"rgba(226,232,240,0.18)"}`, fontFamily:"inherit", transition:"all 0.15s" }}>{a?"✓ ":""}{v}</button>
+            );})}
+          </div>
+        </fieldset>
+      )}
+      <div><label htmlFor="inq-msg" style={LS}>Tell us about your vision</label>
+        <textarea id="inq-msg" maxLength={2000} style={{...IS,minHeight:110,resize:"vertical"}} value={form.message} onChange={set("message")} placeholder="Where would it happen, when, and what are you imagining?"/>
+      </div>
+      {error && <p role="alert" style={{ margin:0, padding:"10px 14px", borderRadius:10, background:"rgba(255,107,43,0.12)", border:"0.5px solid rgba(255,107,43,0.4)", color:SAND, fontSize:14 }}>{error} You can also email <a href="mailto:derrest@cityactivations.com" style={{ color:SAND, textDecoration:"underline" }}>derrest@cityactivations.com</a>.</p>}
+      <button type="submit" disabled={loading} aria-busy={loading} style={{ fontSize:15, fontWeight:900, fontStyle:"italic", letterSpacing:"0.06em", textTransform:"uppercase", padding:"15px", borderRadius:100, border:"none", cursor:loading?"wait":"pointer", background:loading?"rgba(33,150,243,0.4)":GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif" }}>
         {loading?"Sending...":"Submit Inquiry →"}
       </button>
+      <p style={{ margin:0, fontSize:12, color:DIM, textAlign:"center" }}>We reply within 48 hours. No spam, ever.</p>
     </form>
   );
 }
