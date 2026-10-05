@@ -330,7 +330,25 @@ function getEmailTemplate(template: Template, contact: any): { subject: string; 
 }
 
 export async function POST(req: NextRequest) {
-  const { prospect_ids, template, custom_subject, custom_body } = await req.json();
+  const { prospect_ids, template, custom_subject, custom_body, test_email } = await req.json();
+
+  // Test send: one email to the given address using a sample contact; nothing is recorded.
+  if (test_email && !prospect_ids?.length) {
+    const resend = new Resend(process.env.RESEND_API_KEY);
+    const sample = { name: "Derrest Williams", city: "San Marcos", state: "TX" };
+    const content = custom_subject && custom_body
+      ? { subject: custom_subject, html: custom_body.includes("<") ? custom_body : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;font-size:14px;line-height:1.7;max-width:600px;padding:32px;">${custom_body}</pre>` }
+      : getEmailTemplate(template as Template, sample);
+    const { error: sendError } = await resend.emails.send({
+      from: `${FROM_NAME} <${FROM_EMAIL}>`,
+      to: String(test_email),
+      replyTo: FROM_EMAIL,
+      subject: `[TEST] ${content.subject}`,
+      html: content.html,
+      ...("text" in content && content.text ? { text: content.text } : {}),
+    });
+    return NextResponse.json(sendError ? { sent: 0, failed: 1, errors: [sendError.message] } : { sent: 1, failed: 0, errors: [] });
+  }
 
   if (!prospect_ids?.length) {
     return NextResponse.json({ error: "No prospects selected" }, { status: 400 });

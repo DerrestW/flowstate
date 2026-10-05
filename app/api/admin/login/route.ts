@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
 import { createSession } from "@/lib/auth";
+import { getJwtSecret } from "@/lib/jwtSecret";
 
 // Rate limiting - simple in-memory (use Redis in production)
 const attempts = new Map<string, { count: number; resetAt: number }>();
@@ -25,6 +26,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json(
       { error: "Too many login attempts. Try again in 15 minutes." },
       { status: 429 }
+    );
+  }
+
+  if (!getJwtSecret()) {
+    return NextResponse.json(
+      { error: "Server setup: ADMIN_JWT_SECRET is missing or shorter than 16 characters. Add it in Vercel → Settings → Environment Variables, then redeploy." },
+      { status: 500 }
     );
   }
 
