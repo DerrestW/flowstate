@@ -492,7 +492,7 @@ export default function ProspectsPage() {
             <div style={{ padding:"1rem 1.5rem", borderTop:"0.5px solid rgba(6,7,8,0.08)", display:"flex", gap:8, justifyContent:"flex-end", position:"sticky" as const, bottom:0, background:"#fff" }}>
               <button onClick={()=>setShowPreview(false)} style={{ padding:"9px 20px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit", fontSize:13 }}>Cancel</button>
               <button onClick={async()=>{
-                const r = await fetch("/api/prospects/email", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prospect_ids:[], template, test_email:"derrestwilliams@gmail.com", custom_subject:previewSubject||undefined, custom_body:editMode&&previewBody?previewBody:undefined }) });
+                const r = await fetch("/api/prospects/email", { method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({ prospect_ids:[], test_prospect_id: Array.from(selected)[0], template, test_email:"derrestwilliams@gmail.com", custom_subject:previewSubject||undefined, custom_body:editMode&&previewBody?previewBody:undefined }) });
                 const d = await r.json();
                 alert(d.sent===1?"✓ Test email sent to derrestwilliams@gmail.com":"Failed: "+(d.errors?.[0]||"unknown error"));
               }} style={{ padding:"9px 18px", borderRadius:100, background:"transparent", color:"#8B3CF7", border:"1.5px solid #8B3CF7", cursor:"pointer", fontFamily:"inherit", fontSize:12, fontWeight:700 }}>

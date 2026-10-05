@@ -347,12 +347,16 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const { prospect_ids, template, custom_subject, custom_body, test_email } = await req.json();
+  const { prospect_ids, template, custom_subject, custom_body, test_email, test_prospect_id } = await req.json();
 
   // Test send: one email to the given address using a sample contact; nothing is recorded.
   if (test_email && !prospect_ids?.length) {
     const resend = new Resend(process.env.RESEND_API_KEY);
-    const sample = { name: "Derrest Williams", city: "San Marcos", state: "TX" };
+    let sample: any = { name: "Derrest Williams", city: "San Marcos", state: "TX" };
+    if (test_prospect_id) {
+      const { data } = await sb.from("prospects").select("*").eq("id", test_prospect_id).single();
+      if (data) sample = data; // render exactly what this contact would get
+    }
     const content = custom_subject && custom_body
       ? { subject: custom_subject, html: custom_body.includes("<") ? custom_body : `<pre style="font-family:Arial,sans-serif;white-space:pre-wrap;font-size:14px;line-height:1.7;max-width:600px;padding:32px;">${custom_body}</pre>` }
       : getEmailTemplate(template as Template, sample);
