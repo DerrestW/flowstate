@@ -22,7 +22,7 @@ const DEFAULTS: Record<string, Record<string, string>> = {
     headline_1:"WE MAKE", headline_2:"CITIES", headline_3:"COME ALIVE.",
     subline:"FlowState produces world-class outdoor events, seasonal activations, and permanent waterfront experiences — with full ticketing, staffing, marketing, and permitting support.",
     cta_primary:"Bring Us to Your City", cta_secondary:"View Live Experiences",
-    next_event_title:"Hampton, VA — July 2025", next_event_detail:"Urban Slide · 1,000ft · Est. 10K",
+    next_event_title:"Lake Austin Lights", next_event_detail:"Holiday boat cruise · Austin, TX · Nov 20 – Jan 3", next_event_url:"https://lakeaustinlights.com/",
     hero_image:"/img-urban-slide.png",
   },
   stats: {
@@ -163,6 +163,7 @@ export default function PageEditor() {
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>
               <Field label="Title" value={sec.next_event_title||""} onChange={v=>update("hero","next_event_title",v)}/>
               <Field label="Detail" value={sec.next_event_detail||""} onChange={v=>update("hero","next_event_detail",v)}/>
+              <Field label="Link (tickets or event page)" value={sec.next_event_url||""} onChange={v=>update("hero","next_event_url",v)}/>
             </div>
           </div>
         </div>

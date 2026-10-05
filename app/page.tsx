@@ -137,6 +137,7 @@ export default function HomePage() {
           .services-grid{grid-template-columns:1fr 1fr!important}
           .about-grid{grid-template-columns:1fr!important}
           .hero-badge{display:none!important}
+          .hero-bar{display:flex!important;position:relative!important;left:auto!important;right:auto!important;bottom:auto!important;margin:1.5rem 0 -2.5rem!important}
           .process-grid{grid-template-columns:1fr 1fr!important}
           .section-pad{padding:4rem 1.25rem!important}
         }
@@ -173,12 +174,30 @@ export default function HomePage() {
             </Link>
           </div>
         </div>
-        {/* Floating badge — hidden mobile */}
-        <div className="hero-badge" style={{ position:"absolute", bottom:"5rem", right:"1.5rem", zIndex:2, background:"rgba(17,24,39,0.8)", border:"0.5px solid rgba(226,232,240,0.12)", borderRadius:14, padding:"1.25rem 1.5rem", backdropFilter:"blur(12px)" }}>
-          <div style={{ fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:DIM, marginBottom:4 }}>Next Activation</div>
-          <div style={{ fontSize:15, fontWeight:600, color:SAND }}>{p("hero","next_event_title","Hampton, VA — July 2025")}</div>
-          <div style={{ fontSize:12, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginTop:2, fontWeight:700 }}>{p("hero","next_event_detail","Urban Slide · 1,000ft · Est. 10K")}</div>
-        </div>
+        {/* Next activation — floating card on desktop, slim bar on mobile */}
+        {(() => {
+          const title = p("hero","next_event_title","Lake Austin Lights");
+          const detail = p("hero","next_event_detail","Holiday boat cruise · Austin, TX · Nov 20 – Jan 3");
+          const url = p("hero","next_event_url","https://lakeaustinlights.com/");
+          return (<>
+            <a href={url} target="_blank" rel="noopener noreferrer" className="hero-badge" aria-label={`Next activation: ${title}. ${detail}`} style={{ position:"absolute", bottom:"5rem", right:"1.5rem", zIndex:2, display:"block", background:"rgba(17,24,39,0.82)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:14, padding:"1.1rem 1.4rem", backdropFilter:"blur(12px)", textDecoration:"none", maxWidth:300 }}>
+              <div style={{ fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:DIM, marginBottom:4, display:"flex", alignItems:"center", gap:6 }}>
+                <span style={{ width:7, height:7, borderRadius:"50%", background:"#4CAF50", boxShadow:"0 0 0 3px rgba(76,175,80,0.25)" }}/>Next Activation
+              </div>
+              <div style={{ fontSize:16, fontWeight:700, color:SAND }}>{title}</div>
+              <div style={{ fontSize:12, background:GRAD, WebkitBackgroundClip:"text", WebkitTextFillColor:"transparent", marginTop:2, fontWeight:700 }}>{detail}</div>
+              <div style={{ fontSize:11, fontWeight:700, color:SAND, marginTop:10, letterSpacing:"0.04em" }}>Get tickets →</div>
+            </a>
+            <a href={url} target="_blank" rel="noopener noreferrer" className="hero-bar" style={{ display:"none", position:"absolute", left:"1rem", right:"1rem", bottom:"1rem", zIndex:2, alignItems:"center", gap:10, background:"rgba(17,24,39,0.88)", border:"0.5px solid rgba(226,232,240,0.14)", borderRadius:12, padding:"0.7rem 0.9rem", textDecoration:"none" }}>
+              <span style={{ width:7, height:7, borderRadius:"50%", background:"#4CAF50", flexShrink:0 }}/>
+              <span style={{ flex:1, minWidth:0 }}>
+                <span style={{ display:"block", fontSize:10, fontWeight:600, letterSpacing:"0.1em", textTransform:"uppercase", color:DIM }}>Next Activation</span>
+                <span style={{ display:"block", fontSize:14, fontWeight:700, color:SAND, whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" }}>{title}</span>
+              </span>
+              <span style={{ fontSize:12, fontWeight:700, color:SAND, whiteSpace:"nowrap" }}>Tickets →</span>
+            </a>
+          </>);
+        })()}
       </section>
 
       {/* STATS */}
