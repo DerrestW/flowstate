@@ -67,9 +67,9 @@ export default function LakeAustinLightsPage() {
       <SiteNav/>
 
       {/* Hero */}
-      <header style={{ position:"relative", minHeight:"78vh", display:"flex", alignItems:"flex-end", padding:"0 1.5rem 4rem", overflow:"hidden" }}>
-        <img src={E.heroImage} alt="The illuminated Lake Austin Lights tunnel and boats reflected on Lake Austin" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover" }}/>
-        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(17,24,39,0.95) 10%, rgba(17,24,39,0.35) 60%, rgba(17,24,39,0.2))" }}/>
+      <header style={{ position:"relative", minHeight:"82vh", display:"flex", alignItems:"flex-end", padding:"8rem 1.5rem 4rem", overflow:"hidden" }}>
+        <img src={E.heroImage} alt="The illuminated Lake Austin Lights tunnel and boats reflected on Lake Austin" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center 35%" }}/>
+        <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(17,24,39,0.97) 15%, rgba(17,24,39,0.6) 55%, rgba(17,24,39,0.45))" }}/>
         <div style={{ position:"relative", maxWidth:1100, margin:"0 auto", width:"100%" }}>
           <nav aria-label="Breadcrumb" style={{ fontSize:12, color:MUTED, marginBottom:14 }}>
             <Link href="/" style={{ textDecoration:"none" }}>Home</Link> / <Link href="/live" style={{ textDecoration:"none" }}>Live</Link> / <span style={{ color:SAND }}>{E.name}</span>
