@@ -1,6 +1,6 @@
 // Single source of truth for Lake Austin Lights details (used by the SEO page).
 // Source: lakeaustinlights.com (pulled Oct 5, 2026).
-const IMG = "https://lakeaustinlights.com";
+// Photos are copies stored in our own Supabase "media" bucket (lakeaustinlights.com blocks hotlinking).
 
 export const LAKE_AUSTIN_LIGHTS = {
   slug: "lake-austin-lights",
@@ -42,11 +42,11 @@ export const LAKE_AUSTIN_LIGHTS = {
     { name: "Up to 22 guests", price: "$650", amount: 650 },
     { name: "Up to 25 guests", price: "$700", amount: 700 },
   ],
-  heroImage: `${IMG}/assets/optimized/tunnel-2160.webp`,
+  heroImage: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238900620-lake-austin-lights-hero.jpg",
   gallery: [
-    { src: `${IMG}/assets/gallery/2025-signed-tunnel.jpg`, alt: "Illuminated Lake Austin Lights tunnel with a holiday boat and colorful reflections" },
-    { src: `${IMG}/assets/gallery/2025-tunnel-perspective.jpg?v=2`, alt: "The floating light tunnel viewed straight on, its colors reflected in Lake Austin" },
-    { src: `${IMG}/assets/gallery/2025-keep-austin-weird.jpg?v=2`, alt: "Illuminated Texas musician and armadillo display reflected in the lake" },
-    { src: `${IMG}/assets/gallery/2025-polar-bear.jpg?v=2`, alt: "Glowing polar bear holiday display reflected on dark water" },
+    { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238905498-lake-austin-lights-signed-tunnel.jpg", alt: "Illuminated Lake Austin Lights tunnel with a holiday boat and colorful reflections" },
+    { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238908577-lake-austin-lights-tunnel-perspective.jpg", alt: "The floating light tunnel viewed straight on, its colors reflected in Lake Austin" },
+    { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238912034-lake-austin-lights-keep-austin-weird.jpg", alt: "Illuminated Texas musician and armadillo display reflected in the lake" },
+    { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238888932-lake-austin-lights-polar-bear.jpg", alt: "Glowing polar bear holiday display reflected on dark water" },
   ],
 };

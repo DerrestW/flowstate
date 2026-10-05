@@ -22,7 +22,7 @@ const DEFAULTS: Record<string, Record<string, string>> = {
     headline_1:"WE MAKE", headline_2:"CITIES", headline_3:"COME ALIVE.",
     subline:"FlowState produces world-class outdoor events, seasonal activations, and permanent waterfront experiences — with full ticketing, staffing, marketing, and permitting support.",
     cta_primary:"Bring Us to Your City", cta_secondary:"View Live Experiences",
-    hero_image:"https://lakeaustinlights.com/assets/optimized/tunnel-2160.webp", hero_image_alt:"Lake Austin Lights — boats cruising through a floating tunnel of holiday lights", next_event_title:"Lake Austin Lights", next_event_detail:"Holiday boat cruise · Austin, TX · Nov 20 – Jan 3", next_event_url:"/live?event=lake-austin-lights",
+    hero_image:"https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238900620-lake-austin-lights-hero.jpg", hero_image_alt:"Lake Austin Lights — boats cruising through a floating tunnel of holiday lights", next_event_title:"Lake Austin Lights", next_event_detail:"Holiday boat cruise · Austin, TX · Nov 20 – Jan 3", next_event_url:"/live?event=lake-austin-lights",
   },
   stats: {
     stat1_value:"9+", stat1_label:"Years in Business", stat1_sub:"Since 2016",
