@@ -42,7 +42,7 @@ export const LAKE_AUSTIN_LIGHTS = {
     { name: "Up to 22 guests", price: "$650", amount: 650 },
     { name: "Up to 25 guests", price: "$700", amount: 700 },
   ],
-  heroImage: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238900620-lake-austin-lights-hero.jpg",
+  heroImage: "/events/lake-austin-lights/hero.jpg",
   gallery: [
     { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238905498-lake-austin-lights-signed-tunnel.jpg", alt: "Illuminated Lake Austin Lights tunnel with a holiday boat and colorful reflections" },
     { src: "https://fmwbvekforzsfgyzfaau.supabase.co/storage/v1/object/public/media/1791238908577-lake-austin-lights-tunnel-perspective.jpg", alt: "The floating light tunnel viewed straight on, its colors reflected in Lake Austin" },

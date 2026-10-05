@@ -32,7 +32,7 @@ const jsonLd = {
   endDate: E.endDate,
   eventStatus: "https://schema.org/EventScheduled",
   eventAttendanceMode: "https://schema.org/OfflineEventAttendanceMode",
-  image: [E.heroImage, ...E.gallery.map(g => g.src)],
+  image: [`https://cityactivations.com${E.heroImage}`, ...E.gallery.map(g => g.src)],
   location: {
     "@type": "Place",
     name: E.venue,
