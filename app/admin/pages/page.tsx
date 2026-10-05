@@ -22,8 +22,7 @@ const DEFAULTS: Record<string, Record<string, string>> = {
     headline_1:"WE MAKE", headline_2:"CITIES", headline_3:"COME ALIVE.",
     subline:"FlowState produces world-class outdoor events, seasonal activations, and permanent waterfront experiences — with full ticketing, staffing, marketing, and permitting support.",
     cta_primary:"Bring Us to Your City", cta_secondary:"View Live Experiences",
-    next_event_title:"Lake Austin Lights", next_event_detail:"Holiday boat cruise · Austin, TX · Nov 20 – Jan 3", next_event_url:"/live?event=lake-austin-lights",
-    hero_image:"/img-urban-slide.png",
+    hero_image:"https://lakeaustinlights.com/assets/optimized/tunnel-2160.webp", hero_image_alt:"Lake Austin Lights — boats cruising through a floating tunnel of holiday lights", next_event_title:"Lake Austin Lights", next_event_detail:"Holiday boat cruise · Austin, TX · Nov 20 – Jan 3", next_event_url:"/live?event=lake-austin-lights",
   },
   stats: {
     stat1_value:"9+", stat1_label:"Years in Business", stat1_sub:"Since 2016",
@@ -158,6 +157,7 @@ export default function PageEditor() {
             <Field label="Primary Button" value={sec.cta_primary||""} onChange={v=>update("hero","cta_primary",v)}/>
             <Field label="Secondary Button" value={sec.cta_secondary||""} onChange={v=>update("hero","cta_secondary",v)}/>
           </div>
+          <Field label="Hero background image description (for accessibility / SEO)" value={sec.hero_image_alt||""} onChange={v=>update("hero","hero_image_alt",v)}/>
           <div style={{ padding:"1rem", background:"rgba(6,7,8,0.03)", borderRadius:10, border:"0.5px solid rgba(6,7,8,0.08)" }}>
             <div style={{ fontSize:12, fontWeight:700, marginBottom:"0.75rem" }}>Floating "Next Activation" badge (bottom right of hero)</div>
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"0.75rem" }}>

@@ -150,7 +150,7 @@ export default function HomePage() {
 
       {/* HERO */}
       <section style={{ minHeight:"100vh", display:"flex", flexDirection:"column", justifyContent:"flex-end", padding:"0 1.5rem 5rem", position:"relative", overflow:"hidden" }}>
-        <img src="/img-urban-slide.png" alt="" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center top" }}/>
+        <img src={p("hero","hero_image","https://lakeaustinlights.com/assets/optimized/tunnel-2160.webp")} alt={p("hero","hero_image_alt","Lake Austin Lights — boats cruising through a floating tunnel of holiday lights")} fetchPriority="high" style={{ position:"absolute", inset:0, width:"100%", height:"100%", objectFit:"cover", objectPosition:"center" }}/>
         <div style={{ position:"absolute", inset:0, background:"linear-gradient(to top, rgba(17,24,39,1) 0%, rgba(17,24,39,0.72) 45%, rgba(17,24,39,0.25) 100%)" }}/>
         <div style={{ position:"absolute", inset:0, backgroundImage:"linear-gradient(rgba(33,150,243,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(33,150,243,0.04) 1px,transparent 1px)", backgroundSize:"60px 60px", zIndex:1 }}/>
         <div style={{ position:"relative", zIndex:2, maxWidth:900, paddingTop:"5rem" }}>

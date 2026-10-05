@@ -8,7 +8,8 @@ type LiveExp = {
   id: string; title: string; location: string; address: string; status: "NOW OPEN"|"UPCOMING"|"SEASONAL";
   type: string; openSince: string; eventDate: string; hoursDay: string; hoursTime: string;
   description: string; ticketUrl: string; heroImage: string; published: boolean;
-  pricing: { name: string; price: string }[];
+  pricing: { name: string; price: string; url?: string }[];
+  features: string[];
 };
 
 const EMPTY: Omit<LiveExp, "id"> = {
@@ -16,6 +17,7 @@ const EMPTY: Omit<LiveExp, "id"> = {
   openSince: "", eventDate: "", hoursDay: "Monday - Sunday", hoursTime: "10:00 AM - 10:00 PM",
   description: "", ticketUrl: "", heroImage: "", published: true,
   pricing: [{ name: "", price: "" }],
+  features: [],
 };
 
 const STATUS_COLORS = {
@@ -40,12 +42,14 @@ function toDb(exp: LiveExp) {
     open_since: exp.openSince,
     event_date: exp.eventDate,
     hours_days: exp.hoursDay,
+    hours_day: exp.hoursDay,
     hours_time: exp.hoursTime,
     description: exp.description,
     ticket_url: exp.ticketUrl,
     hero_image: exp.heroImage,
     published: exp.published,
-    pricing: exp.pricing,
+    pricing: exp.pricing.map(p => p.url ? p : { name: p.name, price: p.price }),
+    features: exp.features.filter(Boolean),
   };
 }
 
@@ -60,13 +64,14 @@ function fromDb(row: any): LiveExp {
     type: row.type || "PERMANENT",
     openSince: row.open_since || "",
     eventDate: row.event_date || "",
-    hoursDay: row.hours_days || "",
+    hoursDay: row.hours_days || row.hours_day || "",
     hoursTime: row.hours_time || "",
     description: row.description || "",
     ticketUrl: row.ticket_url || "",
     heroImage: row.hero_image || "",
     published: row.published ?? true,
     pricing: Array.isArray(row.pricing) ? row.pricing : [],
+    features: Array.isArray(row.features) ? row.features : [],
   };
 }
 
@@ -91,7 +96,7 @@ export default function AdminLiveExperiences() {
     setEditing(e => e ? { ...e, pricing: [...e.pricing, { name: "", price: "" }] } : e);
   }
 
-  function updatePrice(i: number, field: "name"|"price", val: string) {
+  function updatePrice(i: number, field: "name"|"price"|"url", val: string) {
     setEditing(e => {
       if (!e) return e;
       const pricing = [...e.pricing];
@@ -230,7 +235,7 @@ export default function AdminLiveExperiences() {
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
               <div><label style={labelSt}>Open Since (Permanent)</label><input style={input} value={editing.openSince} onChange={e=>setEditing(p=>p?{...p,openSince:e.target.value}:p)} placeholder="February 27, 2026"/></div>
-              <div><label style={labelSt}>Event Date (Events)</label><input style={input} value={editing.eventDate} onChange={e=>setEditing(p=>p?{...p,eventDate:e.target.value}:p)} placeholder="July 2025"/></div>
+              <div><label style={labelSt}>Event Date — e.g. "Nov 20, 2026 – Jan 3, 2027" (moves to Past Events automatically after it ends)</label><input style={input} value={editing.eventDate} onChange={e=>setEditing(p=>p?{...p,eventDate:e.target.value}:p)} placeholder="July 2025"/></div>
             </div>
 
             <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:"1rem" }}>
@@ -249,12 +254,18 @@ export default function AdminLiveExperiences() {
                 <button type="button" onClick={addPriceRow} style={{ fontSize:11, padding:"4px 12px", borderRadius:100, border:"0.5px solid rgba(6,7,8,0.2)", background:"transparent", cursor:"pointer", fontFamily:"inherit" }}>+ Add row</button>
               </div>
               {editing.pricing.map((row, i) => (
-                <div key={i} style={{ display:"grid", gridTemplateColumns:"1fr 1fr auto", gap:8, marginBottom:8 }}>
+                <div key={i} style={{ display:"grid", gridTemplateColumns:"1.2fr 0.6fr 1.4fr auto", gap:8, marginBottom:8 }}>
                   <input style={input} value={row.name} onChange={e=>updatePrice(i,"name",e.target.value)} placeholder="General Admission"/>
                   <input style={input} value={row.price} onChange={e=>updatePrice(i,"price",e.target.value)} placeholder="$25"/>
+                  <input style={input} value={row.url||""} onChange={e=>updatePrice(i,"url",e.target.value)} placeholder="Booking link (optional)"/>
                   <button type="button" onClick={()=>removePrice(i)} style={{ padding:"6px 10px", borderRadius:8, background:"#FFEBEE", color:"#B71C1C", border:"none", cursor:"pointer" }}>✕</button>
                 </div>
               ))}
+            </div>
+
+            <div>
+              <label style={labelSt}>What&apos;s included — one per line</label>
+              <textarea style={{...input,minHeight:90,resize:"vertical"}} value={editing.features.join("\n")} onChange={e=>setEditing(p=>p?{...p,features:e.target.value.split("\n")}:p)} placeholder={"Unlimited hot cocoa\nCozy blankets"}/>
             </div>
 
             <label style={{ display:"flex", alignItems:"center", gap:8, cursor:"pointer", fontSize:13, fontWeight:500 }}>

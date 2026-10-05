@@ -4,10 +4,13 @@ import { SiteNav, SiteFooter, GradientBtn, DC, GRAD, BLUE, ORANGE, NAVY, NAVY_MI
 
 type Exp = {
   id: string; title: string; location: string; address?: string; status: string; type: string;
-  open_since?: string; event_date?: string | null; hours_day?: string; hours_time?: string;
+  open_since?: string; event_date?: string | null; hours_day?: string; hours_days?: string; hours_time?: string;
   description?: string; ticket_url?: string; hero_image?: string; published?: boolean;
   pricing?: { name: string; price: string; url?: string }[]; features?: string[];
 };
+
+// Events that also have a full, search-friendly page
+const EVENT_PAGES: Record<string, string> = { "lake-austin-lights": "/lake-austin-lights" };
 
 function slugify(t: string) {
   return (t || "").toLowerCase().normalize("NFKD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -241,10 +244,10 @@ export default function LivePage() {
                     <div style={{ fontSize:14, fontWeight:700, color:SAND }}>{selected.event_date}</div>
                   </div>
                 )}
-                {(selected.hours_day || selected.hours_time) && <div style={{ padding:"0.875rem 0", borderBottom:BORDER, marginBottom:"0.875rem" }}>
+                {(selected.hours_day || selected.hours_days || selected.hours_time) && <div style={{ padding:"0.875rem 0", borderBottom:BORDER, marginBottom:"0.875rem" }}>
                   <div style={{ fontSize:10, fontWeight:700, letterSpacing:"0.06em", textTransform:"uppercase", color:DIM, marginBottom:6 }}>Hours</div>
                   <div style={{ display:"flex", justifyContent:"space-between", fontSize:13 }}>
-                    <span style={{ color:MUTED }}>{selected.hours_day}</span>
+                    <span style={{ color:MUTED }}>{selected.hours_days || selected.hours_day}</span>
                     <span style={{ fontWeight:600, color:SAND }}>{selected.hours_time}</span>
                   </div>
                 </div>}
@@ -271,6 +274,11 @@ export default function LivePage() {
                   ) : (
                     <a href="/#contact" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:14, fontWeight:900, fontStyle:"italic", padding:"12px", borderRadius:100, background:GRAD, color:"#fff", fontFamily:"'Barlow Condensed',sans-serif", textDecoration:"none" }}>
                       Get Notified
+                    </a>
+                  )}
+                  {EVENT_PAGES[slugify(selected.title)] && (
+                    <a href={EVENT_PAGES[slugify(selected.title)]} style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:13, fontWeight:700, padding:"10px", borderRadius:100, border:"0.5px solid rgba(33,150,243,0.5)", color:SAND, textDecoration:"none" }}>
+                      Full event page →
                     </a>
                   )}
                   <a href={`https://maps.google.com?q=${encodeURIComponent(selected.address||selected.location)}`} target="_blank" rel="noopener noreferrer" style={{ display:"flex", alignItems:"center", justifyContent:"center", gap:8, fontSize:13, fontWeight:600, padding:"10px", borderRadius:100, border:"0.5px solid rgba(226,232,240,0.2)", color:MUTED, textDecoration:"none" }}>
