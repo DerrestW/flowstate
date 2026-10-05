@@ -7,6 +7,39 @@ const FALLBACK = [
   { id:"2", title:"Urban Slide — Hampton, VA", location:"Hampton, Virginia", address:"Settlers Landing Road, Hampton, VA", status:"UPCOMING", type:"EVENT", open_since:"", event_date:"July 2025", hours_day:"Event Day Only", hours_time:"10:00 AM - 6:00 PM", description:"FlowState's flagship 500-foot water slide returns to Settlers Landing Road in Hampton, VA.", ticket_url:"", hero_image:"/img-urban-slide.png", published:true, pricing:[{name:"General Admission",price:"TBD"}], features:["1,000-foot modular water slide","Family-friendly","Fully permitted","Est. 10,000 attendees"] },
 ];
 
+
+// Event dates are free text ("July 26, 2026", "Nov 20, 2026 – Jan 3, 2027").
+// Returns [start, end] when they can be read, so past events drop off and running ones show as open.
+function eventRange(text?: string | null): [Date, Date] | null {
+  if (!text || !/\b(jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)[a-z]*\.?\b|\d{1,2}\/\d{1,2}/i.test(text)) return null;
+  const years = text.match(/\b20\d{2}\b/g);
+  const parts = text.split(/\s*(?:–|—|\s-\s|\bto\b|\bthrough\b)\s*/i).filter(Boolean);
+  const parse = (str: string, fallbackYear?: string) => {
+    const withYear = /\b20\d{2}\b/.test(str) || !fallbackYear ? str : `${str}, ${fallbackYear}`;
+    const d = new Date(withYear);
+    return isNaN(d.getTime()) ? null : d;
+  };
+  const lastYear = years ? years[years.length - 1] : String(new Date().getFullYear());
+  const start = parse(parts[0], years ? years[0] : lastYear);
+  let end = parse(parts[parts.length - 1], lastYear);
+  if (!start || !end) return null;
+  if (end < start) end = new Date(end.getFullYear() + 1, end.getMonth(), end.getDate());
+  // "July 2025" (no day) runs to the end of that month
+  if (!/\b\d{1,2}\b(?!\d)/.test(parts[parts.length - 1].replace(/\b20\d{2}\b/g, ""))) end = new Date(end.getFullYear(), end.getMonth() + 1, 0);
+  end.setHours(23, 59, 59, 999);
+  return [start, end];
+}
+
+function withLiveStatus<T extends { status: string; event_date?: string | null }>(list: T[]): T[] {
+  const now = new Date();
+  return list
+    .filter(e => { const r = eventRange(e.event_date); return !r || r[1] >= now; })   // hide finished events
+    .map(e => {
+      const r = eventRange(e.event_date);
+      return r && e.status === "UPCOMING" && r[0] <= now ? { ...e, status: "NOW OPEN" } : e;
+    });
+}
+
 const STATUS_COLORS: Record<string,{bg:string,text:string,dot:string}> = {
   "NOW OPEN": { bg:"rgba(76,175,80,0.12)", text:"#4CAF50", dot:"#4CAF50" },
   "UPCOMING": { bg:"rgba(255,152,0,0.12)", text:"#FF9800", dot:"#FF9800" },
@@ -36,7 +69,8 @@ export default function LivePage() {
     return () => window.removeEventListener("keydown", h);
   }, []);
 
-  const filtered = filter==="All" ? experiences : experiences.filter(e=>e.status===filter);
+  const current = withLiveStatus(experiences);
+  const filtered = filter==="All" ? current : current.filter(e=>e.status===filter);
 
   return (
     <div style={{ fontFamily:"'Barlow',sans-serif", background:NAVY, color:SAND }}>
