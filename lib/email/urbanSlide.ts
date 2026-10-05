@@ -11,6 +11,19 @@ const PACKET = `${SITE}/urban-slide-info-packet.pdf`;
 const ADDRESS = process.env.COMPANY_MAILING_ADDRESS || "FlowState Experiences · Houston, TX";
 const UNSUB = "mailto:derrest@cityactivations.com?subject=Unsubscribe";
 
+// Past hosts and clients shown in the trust banner (text only: no logos or seals used without permission)
+const TRUSTED = [
+  "Fredericksburg, VA", "Roanoke, VA", "Lynchburg, VA", "Gadsden, AL", "Marble Falls, TX",
+  "Jacksonville, FL", "Calgary, Canada", "Blueberry Festival", "U.S. Army", "U.S. Navy", "U.S. Air Force",
+];
+
+const WHY: [string, string][] = [
+  ["Newsworthy.", "A waterslide down Main Street draws local TV, press and a flood of social posts."],
+  ["Boosts community morale.", "An all-ages day that brings residents together downtown."],
+  ["A visible win for city leadership.", "Council members and departments get a feel-good event to show up for and talk about."],
+  ["Brings people downtown.", "Thousands of riders and spectators mean foot traffic for local businesses."],
+];
+
 const ORANGE = "#FF6B2B";
 const BLUE = "#1E88E5";
 const INK = "#14181F";
@@ -73,7 +86,7 @@ export function urbanSlidePitch(c: OutreachContact) {
   const first = firstNameOf(c);
   const city = cityOf(c);
   const subject = `A street waterslide for ${city}?`;
-  const preheader = `One day in Fredericksburg, VA: 1,800 sliders and $72,500 in ticket + sponsor revenue.`;
+  const preheader = `Fredericksburg, VA: 1,800 sliders, sold out, and $72,500 in ticket + sponsor revenue.`;
 
   const inner = `
 <tr><td style="padding:0;"><a href="${FB}"><img src="${SITE}/email/slide-aerial.jpg" width="600" alt="The Urban Slide running down a closed downtown street" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></a></td></tr>
@@ -85,8 +98,8 @@ export function urbanSlidePitch(c: OutreachContact) {
 
 <tr><td class="px" style="padding:14px 32px 0;font-size:16px;line-height:25px;color:${BODY};">
 <p style="margin:0 0 14px;">Howdy${first ? ` ${esc(first)}` : ""},</p>
-<p style="margin:0 0 14px;">The Urban Slide closes down a city street and turns it into a giant multi-lane waterslide, one day that families, residents and visitors keep talking about long after it's gone. We've run it with cities across the country, and the U.S. Air Force even bought one of our slides.</p>
-<p style="margin:0;">It also pays for itself. Here's what one host city reported:</p>
+<p style="margin:0 0 14px;">The Urban Slide closes down a city street and turns it into a giant multi-lane waterslide, an event that families, residents and visitors keep talking about long after it's gone. We've run it with cities across the country, and the U.S. Air Force even bought one of our slides.</p>
+<p style="margin:0;">With ticket sales and local sponsors, it can often pay for itself. Here's what one host city reported:</p>
 </td></tr>
 
 <tr><td class="px" style="padding:18px 32px 4px;">
@@ -94,9 +107,24 @@ export function urbanSlidePitch(c: OutreachContact) {
 <tr>
 <td class="stack stat" width="33%" align="center" style="padding:18px 8px;"><div style="font-size:26px;font-weight:900;color:${ORANGE};">1,800</div><div style="font-size:12px;line-height:16px;color:${BODY};">sliders, sold out</div></td>
 <td class="stack stat" width="34%" align="center" style="padding:18px 8px;"><div style="font-size:26px;font-weight:900;color:${ORANGE};">$72,500</div><div style="font-size:12px;line-height:16px;color:${BODY};">tickets + sponsorships</div></td>
-<td class="stack stat" width="33%" align="center" style="padding:18px 8px;"><div style="font-size:26px;font-weight:900;color:${ORANGE};">1 day</div><div style="font-size:12px;line-height:16px;color:${BODY};">event, 9am – 6pm</div></td>
+<td class="stack stat" width="33%" align="center" style="padding:18px 8px;"><div style="font-size:26px;font-weight:900;color:${ORANGE};">$40,000</div><div style="font-size:12px;line-height:16px;color:${BODY};">from 8 local sponsors</div></td>
 </tr>
-<tr><td colspan="3" align="center" style="padding:0 16px 14px;font-size:12px;color:${MUTED};">City of Fredericksburg, VA — from their Economic Development &amp; Tourism office</td></tr>
+<tr><td colspan="3" align="center" style="padding:0 16px 14px;font-size:12px;color:${MUTED};">City of Fredericksburg, VA, as reported by their Economic Development &amp; Tourism office</td></tr>
+</table>
+</td></tr>
+
+
+<tr><td class="px" style="padding:18px 32px 0;">
+<div style="font-size:11px;font-weight:bold;letter-spacing:1.4px;text-transform:uppercase;color:${MUTED};text-align:center;margin-bottom:10px;">Trusted by cities, festivals &amp; the U.S. military</div>
+<div style="text-align:center;font-size:0;line-height:0;">
+${TRUSTED.map(t => `<span style="display:inline-block;margin:0 4px 8px;padding:7px 12px;border:1px solid #E6E9EE;border-radius:100px;font-size:12px;line-height:14px;font-weight:bold;color:${INK};white-space:nowrap;">${t}</span>`).join("")}
+</div>
+</td></tr>
+
+<tr><td class="px" style="padding:20px 32px 4px;">
+<div style="font-size:13px;font-weight:bold;letter-spacing:1.2px;text-transform:uppercase;color:${INK};margin-bottom:10px;">Why cities book it</div>
+<table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+${WHY.map(([h, d]) => `<tr><td width="26" valign="top" style="padding:2px 0 12px;font-size:16px;line-height:21px;color:${ORANGE};font-weight:900;">&#10003;</td><td style="padding:0 0 12px;font-size:15px;line-height:22px;color:${BODY};"><strong style="color:${INK};">${h}</strong> ${d}</td></tr>`).join("")}
 </table>
 </td></tr>
 
@@ -124,7 +152,7 @@ export function urbanSlidePitch(c: OutreachContact) {
 </td></tr>
 
 <tr><td class="px" style="padding:22px 32px 0;font-size:16px;line-height:25px;color:${BODY};">
-<p style="margin:0 0 16px;">The packet below has a two-day revenue example (up to <strong>$67,500</strong> in ticket sales at $30 a ticket), our sponsorship guide, and the full recommendation letter from Fredericksburg. 2027 dates are first-come, first-served.</p>
+<p style="margin:0 0 16px;">The packet below has a two-day revenue example: up to <strong>$67,500</strong> in ticket sales if all 10 waves sell out at 225 riders and $30 a ticket. It also has our sponsorship guide and the full recommendation letter from Fredericksburg. 2027 dates are first-come, first-served.</p>
 </td></tr>
 
 <tr><td class="px" align="left" style="padding:4px 32px 8px;">
@@ -138,15 +166,19 @@ ${signature()}`;
 
   const text = `Howdy${first ? ` ${first}` : ""},
 
-The Urban Slide closes down a city street and turns it into a giant multi-lane waterslide (500-700 ft), one day that families, residents and visitors keep talking about. We've run it with cities across the country, and the U.S. Air Force even bought one of our slides.
+The Urban Slide closes down a city street and turns it into a giant multi-lane waterslide (500-700 ft), an event families, residents and visitors keep talking about. We've run it with cities across the country, and the U.S. Air Force even bought one of our slides.
 
-It also pays for itself. Fredericksburg, VA sold out 1,800 slider spots in one day and grossed $72,500 in tickets and sponsorships.
+With ticket sales and local sponsors, it can often pay for itself. Fredericksburg, VA sold out 1,800 slider spots and grossed $72,500 ($32,500 in tickets + $40,000 from 8 sponsors).
+
+Why cities book it: it's newsworthy (local TV, press, social buzz), boosts community morale, gives city leadership a visible win, and brings people downtown.
+
+Past hosts and clients include Fredericksburg VA, Roanoke VA, Lynchburg VA, Gadsden AL, Marble Falls TX, Jacksonville FL, Calgary, the Blueberry Festival, and the U.S. Army, Navy and Air Force.
 
 Two ways to bring it to ${city}:
 - Turnkey event: we bring the slide, crew, setup, teardown and marketing support.
 - Own the slide: buy your own and run it every year with our support.
 
-Revenue example, sponsorship guide and Fredericksburg's recommendation letter:
+Revenue example (up to $67,500 over two days if all 10 waves sell out at 225 riders and $30 a ticket), sponsorship guide and Fredericksburg's recommendation letter:
 ${PACKET}
 
 We're booking the 2027 season now, first-come, first-served. Reply with a good time for a 15-minute call.
@@ -174,7 +206,7 @@ export function urbanSlideFollowUp(c: OutreachContact) {
 <tr><td style="padding:0;"><img src="${SITE}/email/slide-arches.jpg" width="600" alt="Riders under the arches of The Urban Slide" style="display:block;width:100%;max-width:600px;height:auto;border:0;"></td></tr>
 <tr><td class="px" style="padding:26px 32px 0;font-size:16px;line-height:25px;color:${BODY};">
 <p style="margin:0 0 14px;">Howdy${first ? ` ${esc(first)}` : ""},</p>
-<p style="margin:0 0 14px;">Following up on The Urban Slide for ${esc(city)}. The question I hear most is <em>"how would we pay for it?"</em> Most host cities cover it with two things:</p>
+<p style="margin:0 0 14px;">Following up on The Urban Slide for ${esc(city)}. The question I hear most is <em>"how would we pay for it?"</em> Many host cities offset the cost with two things:</p>
 <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin:0 0 14px;">
 <tr><td width="28" valign="top" style="font-size:18px;font-weight:900;color:${ORANGE};">1</td><td style="padding:0 0 10px;"><strong style="color:${INK};">Ticketed waves.</strong> 225 riders per 2-hour wave, five waves a day.</td></tr>
 <tr><td width="28" valign="top" style="font-size:18px;font-weight:900;color:${ORANGE};">2</td><td><strong style="color:${INK};">Local sponsors</strong> on lane banners, tubes and wristbands. Fredericksburg raised $40,000 from 8 sponsors.</td></tr>
@@ -186,7 +218,7 @@ ${signature()}`;
 
   const text = `Howdy${first ? ` ${first}` : ""},
 
-Following up on The Urban Slide for ${city}. The question I hear most is "how would we pay for it?" Most host cities cover it with two things:
+Following up on The Urban Slide for ${city}. The question I hear most is "how would we pay for it?" Many host cities offset the cost with two things:
 
 1. Ticketed waves: 225 riders per 2-hour wave, five waves a day.
 2. Local sponsors on lane banners, tubes and wristbands. Fredericksburg raised $40,000 from 8 sponsors.
