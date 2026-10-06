@@ -9,6 +9,7 @@ export default function Page() {
     tagline="Every finish line is a canvas"
     heroImg="/img-color-run-1.png"
     galleryImgs={["/img-color-run-1.png", "/img-color-run-2.png"]}
+    videoId="v0I80eACoj8"
 
     about="5K color powder runs that turn your city into a living rainbow. Family-friendly, photogenic, and a social media magnet that drives thousands."
     includes={[
