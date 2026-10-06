@@ -6,7 +6,7 @@ import { sendOutreach, businessDaysBetween } from "@/lib/email/sendOutreach";
 //
 // 1. Follow-ups: anyone whose last email was the Urban Slide pitch, sent FOLLOWUP_BUSINESS_DAYS+ work days ago,
 //    and who hasn't replied/unsubscribed, gets Email 2. Nobody gets the follow-up without the pitch first.
-// 2. New pitches (off by default): if DAILY_PITCH_COUNT > 0, the next N "Not contacted" prospects get Email 1,
+// 2. New pitches: the next N "Not contacted" prospects get Email 1 (20/day warm-up week, then 80/day),
 //    Parks & Rec / events people first, at most 2 per city per day.
 export const maxDuration = 300;
 
@@ -27,7 +27,9 @@ export async function GET() {
   if (dow === 0 || dow === 6) return NextResponse.json({ skipped: "weekend" });
 
   const followupDays = Math.max(1, Number(process.env.FOLLOWUP_BUSINESS_DAYS || 4));
-  const pitchCount = Math.max(0, Math.min(200, Number(process.env.DAILY_PITCH_COUNT || 0)));
+  // Warm-up: 20/day through Fri Oct 9 2026, then 80/day. DAILY_PITCH_COUNT in Vercel overrides (set 0 to pause).
+  const rampDefault = now < new Date("2026-10-12T00:00:00-05:00") ? 20 : 80;
+  const pitchCount = Math.max(0, Math.min(200, Number(process.env.DAILY_PITCH_COUNT ?? rampDefault)));
 
   // ---- 1. Follow-ups due --------------------------------------------------
   const { data: pitched, error: e1 } = await sb
@@ -46,7 +48,7 @@ export async function GET() {
   const followups = due.length ? await sendOutreach(sb, due, "follow_up") : { sent: 0, failed: 0, skipped: 0, errors: [] };
 
   // ---- 2. New pitches (opt-in) ---------------------------------------------
-  let pitches: any = { sent: 0, failed: 0, skipped: 0, errors: [], note: "DAILY_PITCH_COUNT is 0 — new pitches are off" };
+  let pitches: any = { sent: 0, failed: 0, skipped: 0, errors: [], note: "DAILY_PITCH_COUNT is 0 — new pitches are paused" };
   if (pitchCount > 0) {
     const { data: fresh, error: e2 } = await sb
       .from("prospects")
