@@ -88,7 +88,9 @@ function signature() {
 <strong style="color:${INK};font-size:15px;">Derrest Williams Jr.</strong><br>
 Co-Founder, The Urban Slide &amp; FlowState Experiences<br>
 <span style="color:${BODY};">${PHONE}</span> &nbsp;·&nbsp; <a href="${SITE}" style="color:${BLUE};text-decoration:none;">cityactivations.com</a> &nbsp;·&nbsp; <a href="${FB}" style="color:${BLUE};text-decoration:none;">Facebook</a>
-</td></tr></table></td></tr>`;
+</td></tr>
+<tr><td style="padding-top:12px;"><a href="${SITE}"><img src="${SITE}/email/flowstate-wordmark.png" width="200" height="55" alt="FlowState Experiences" style="display:block;width:200px;height:55px;border:0;border-radius:8px;"></a></td></tr>
+</table></td></tr>`;
 }
 
 // ---------------------------------------------------------------------------
