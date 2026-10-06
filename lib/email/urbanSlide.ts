@@ -37,11 +37,14 @@ function firstNameOf(c: OutreachContact) {
   const n = (c.name || "").trim().split(/\s+/)[0];
   return n && n.toLowerCase() !== "unknown" ? n : "";
 }
+const STATE_NAMES = ["Alabama","Alaska","Arizona","Arkansas","California","Colorado","Connecticut","Delaware","Florida","Georgia","Hawaii","Idaho","Illinois","Indiana","Iowa","Kansas","Kentucky","Louisiana","Maine","Maryland","Massachusetts","Michigan","Minnesota","Mississippi","Missouri","Montana","Nebraska","Nevada","New Hampshire","New Jersey","New Mexico","New York","North Carolina","North Dakota","Ohio","Oklahoma","Oregon","Pennsylvania","Rhode Island","South Carolina","South Dakota","Tennessee","Texas","Utah","Vermont","Virginia","Washington","West Virginia","Wisconsin","Wyoming"];
+
 function cityOf(c: OutreachContact) {
   // "City of Abilene" / "Town of Fate" / "Abilene, TX" / "ABILENE" → "Abilene"
   let city = (c.city || "").trim()
-    .replace(/^(the\s+)?(city|town|village)\s+of\s+/i, "")
+    .replace(/^(the\s+)?(city\s+and\s+county|city|town|village|borough|township|county|municipality)\s+of\s+/i, "")
     .replace(/,\s*[A-Za-z]{2}(\s+\d{5})?$/, "")
+    .replace(new RegExp(`[,\\s]+(${STATE_NAMES.join("|")})$`, "i"), "")
     .trim();
   if (city && city === city.toUpperCase()) {
     city = city.toLowerCase().replace(/\b\w/g, ch => ch.toUpperCase());
