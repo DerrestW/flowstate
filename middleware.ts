@@ -60,13 +60,15 @@ export async function middleware(request: NextRequest) {
       return NextResponse.next();
     }
 
+    // Server-to-server calls (Vercel cron and internal jobs) authenticate with CRON_SECRET
+    const cronSecret = process.env.CRON_SECRET;
+    const hasCronSecret = !!cronSecret && request.headers.get("authorization") === `Bearer ${cronSecret}`;
+
     if (matches(pathname, "/api/cron")) {
-      const cronSecret = process.env.CRON_SECRET;
-      const auth = request.headers.get("authorization");
-      if (cronSecret && auth === `Bearer ${cronSecret}`) return NextResponse.next();
-      if (await isAdmin(request)) return NextResponse.next();
+      if (hasCronSecret || await isAdmin(request)) return NextResponse.next();
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+    if (hasCronSecret && matches(pathname, "/api/prospects/scan")) return NextResponse.next();
 
     if (pathname === "/api/inquiries" && method === "POST") {
       return NextResponse.next();

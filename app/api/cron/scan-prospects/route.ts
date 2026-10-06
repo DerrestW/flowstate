@@ -48,9 +48,10 @@ export async function GET(req: NextRequest) {
   const results = [];
   for (const target of citiesToScan) {
     try {
-      const r = await fetch(`${process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com"}/api/prospects/scan`, {
+      const r = await fetch(`${(process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com").trim().replace(/\/+$/, "")}/api/prospects/scan`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        // Internal call: the API is login-protected, so authenticate with the cron secret
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${process.env.CRON_SECRET || ""}` },
         body: JSON.stringify(target),
       });
       const result = await r.json();

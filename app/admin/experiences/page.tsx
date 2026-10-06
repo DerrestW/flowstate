@@ -26,7 +26,7 @@ const SLUG_MAP: Record<string, { url: string; label: string; img: string }> = {
   "paddle-boards":     { url:"/permanent/paddle-boards",           label:"Paddle Board Rentals", img:"/img-sup-rentals.png" },
 };
 
-const SITE_BASE = process.env.NEXT_PUBLIC_SITE_URL || "";
+const SITE_BASE = (process.env.NEXT_PUBLIC_SITE_URL || "").trim().replace(/\/+$/, "");
 
 type Exp = { id:string; slug:string; title:string; redirect_to?:string; tagline?:string; description?:string; long_description?:string; includes?:string[]; category:string; type?:string; is_live?:boolean; video_url?:string; hero_image?:string; gallery_images?:string[]; capacity_min?:number; capacity_max?:number; duration?:string; price_starting?:number; price_unit?:string; featured:boolean; published:boolean; sort_order:number };
 

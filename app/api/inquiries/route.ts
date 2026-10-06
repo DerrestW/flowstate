@@ -54,7 +54,7 @@ async function sendEmailNotification(inquiry: Record<string, unknown>) {
   const resendKey = process.env.RESEND_API_KEY;
   const notifyEmail = process.env.ADMIN_NOTIFY_EMAIL || "derrestwilliams@gmail.com";
   const fromEmail = process.env.INQUIRY_FROM_EMAIL || "FlowState Inquiries <inquiries@cityactivations.com>";
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com";
+  const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com").trim().replace(/\/+$/, "");
   if (!resendKey) return;
 
   const experiencesList = (inquiry.experience_interest as string[] || []).join(", ") || "Not specified";

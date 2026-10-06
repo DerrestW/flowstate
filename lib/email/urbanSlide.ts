@@ -4,7 +4,7 @@
 
 export type OutreachContact = { name?: string | null; city?: string | null; state?: string | null };
 
-const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com";
+const SITE = (process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com").trim().replace(/\/+$/, "");
 const PHONE = "(713) 376-8521";
 // Links in outreach emails stay on the sending domain (cityactivations.com) — /go/facebook redirects to the page
 const FB = `${SITE}/go/facebook`;
