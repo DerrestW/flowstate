@@ -6,7 +6,8 @@ export type OutreachContact = { name?: string | null; city?: string | null; stat
 
 const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com";
 const PHONE = "(713) 376-8521";
-const FB = "https://www.facebook.com/TheUrbanSlide";
+// Links in outreach emails stay on the sending domain (cityactivations.com) — /go/facebook redirects to the page
+const FB = `${SITE}/go/facebook`;
 const PACKET = `${SITE}/urban-slide-info-packet.pdf`;
 const ADDRESS = process.env.COMPANY_MAILING_ADDRESS || "FlowState Experiences · 17336 W Little York Rd, Houston, TX 77084";
 const UNSUB = "mailto:derrest@cityactivations.com?subject=Unsubscribe";
@@ -86,7 +87,7 @@ function signature() {
 <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="border-top:1px solid #E6E9EE;width:100%;"><tr><td style="padding-top:18px;font-size:14px;line-height:21px;color:${BODY};">
 <strong style="color:${INK};font-size:15px;">Derrest Williams Jr.</strong><br>
 Co-Founder, The Urban Slide &amp; FlowState Experiences<br>
-<a href="tel:+17133768521" style="color:${BODY};text-decoration:none;">${PHONE}</a> &nbsp;·&nbsp; <a href="${SITE}" style="color:${BLUE};text-decoration:none;">cityactivations.com</a> &nbsp;·&nbsp; <a href="${FB}" style="color:${BLUE};text-decoration:none;">Facebook</a>
+<span style="color:${BODY};">${PHONE}</span> &nbsp;·&nbsp; <a href="${SITE}" style="color:${BLUE};text-decoration:none;">cityactivations.com</a> &nbsp;·&nbsp; <a href="${FB}" style="color:${BLUE};text-decoration:none;">Facebook</a>
 </td></tr></table></td></tr>`;
 }
 
