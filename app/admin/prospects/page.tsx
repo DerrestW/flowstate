@@ -18,6 +18,7 @@ const EMAIL_STATUSES: Record<string, { bg:string; text:string; label:string }> =
   meeting:     { bg:"#FFF8E1", text:"#F57F17", label:"Meeting set" },
   closed:      { bg:"#F3E5F5", text:"#4A148C", label:"Closed" },
   unsubscribed:{ bg:"#FFEBEE", text:"#B71C1C", label:"Unsubscribed" },
+  bounced:     { bg:"#FBE9E7", text:"#BF360C", label:"Bounced" },
 };
 
 // Must match FOLLOWUP_BUSINESS_DAYS used by /api/cron/outreach (default 4)

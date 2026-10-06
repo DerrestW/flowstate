@@ -12,13 +12,20 @@ export async function GET(req: NextRequest) {
   const city = searchParams.get("city");
   const status = searchParams.get("status");
 
-  let query = sb.from("prospects").select("*").order("created_at", { ascending: false });
-
-  if (state) query = query.eq("state", state);
-  if (city) query = query.eq("city", city);
-  if (status) query = query.eq("email_status", status);
-
-  const { data, error } = await query;
+  // Supabase returns at most 1,000 rows per request, so page through everything
+  const PAGE = 1000;
+  const data: any[] = [];
+  let error: any = null;
+  for (let from = 0; from < 20000; from += PAGE) {
+    let query = sb.from("prospects").select("*").order("created_at", { ascending: false }).order("id").range(from, from + PAGE - 1);
+    if (state) query = query.eq("state", state);
+    if (city) query = query.eq("city", city);
+    if (status) query = query.eq("email_status", status);
+    const res = await query;
+    if (res.error) { error = res.error; break; }
+    data.push(...(res.data || []));
+    if (!res.data || res.data.length < PAGE) break;
+  }
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
   return NextResponse.json(data || []);
 }
