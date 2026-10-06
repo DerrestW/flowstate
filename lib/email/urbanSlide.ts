@@ -8,7 +8,7 @@ const SITE = process.env.NEXT_PUBLIC_SITE_URL || "https://cityactivations.com";
 const PHONE = "(713) 376-8521";
 const FB = "https://www.facebook.com/TheUrbanSlide";
 const PACKET = `${SITE}/urban-slide-info-packet.pdf`;
-const ADDRESS = process.env.COMPANY_MAILING_ADDRESS || "FlowState Experiences · Houston, TX";
+const ADDRESS = process.env.COMPANY_MAILING_ADDRESS || "FlowState Experiences · 17336 W Little York Rd, Houston, TX 77084";
 const UNSUB = "mailto:derrest@cityactivations.com?subject=Unsubscribe";
 
 // Past hosts and clients shown in the trust banner (text only: no logos or seals used without permission)
