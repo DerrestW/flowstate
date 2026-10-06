@@ -12,7 +12,6 @@ const DEFAULTS: Logo[] = [
   { id: "2", name: "Houston Parks Dept.", abbr: "Houston, TX", logo_url: "", published: true, sort_order: 2 },
   { id: "3", name: "City of Austin", abbr: "Austin, TX", logo_url: "", published: true, sort_order: 3 },
   { id: "4", name: "ATX Summer Fest", abbr: "Festival", logo_url: "", published: true, sort_order: 4 },
-  { id: "6", name: "City of Norfolk", abbr: "Norfolk, VA", logo_url: "", published: true, sort_order: 6 },
   { id: "7", name: "Galveston Events", abbr: "Galveston, TX", logo_url: "", published: false, sort_order: 7 },
   { id: "8", name: "YMCA Houston", abbr: "Nonprofit", logo_url: "", published: true, sort_order: 8 },
 ];

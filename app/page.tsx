@@ -28,7 +28,6 @@ const FALLBACK_LOGOS = [
   { name:"Houston Parks Dept.", abbr:"Houston, TX" },
   { name:"City of Austin", abbr:"Austin, TX" },
   { name:"ATX Summer Fest", abbr:"Festival" },
-  { name:"City of Norfolk", abbr:"Norfolk, VA" },
   { name:"YMCA Houston", abbr:"Nonprofit" },
   { name:"Galveston Events", abbr:"Galveston, TX" },
 ];
