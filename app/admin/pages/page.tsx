@@ -45,7 +45,7 @@ const DEFAULTS: Record<string, Record<string, string>> = {
     item1_title:"Urban Slide — Hampton, VA", item1_sub:"8,000+ attendees · $70K contract · Fully permitted",
     item2_title:"Graffiti Run — Houston, TX", item2_sub:"12,000+ participants · Aerial start-line coverage",
     item3_title:"Mud Run Series", item3_sub:"65+ events · 330K+ participants total",
-    item4_title:"Donut Boat — Discovery Green", item4_sub:"Houston, TX · Operating daily",
+    item4_title:"Donut Boat — Mozart's Coffee Roasters", item4_sub:"Austin, TX · Lake Austin",
     image:"/img-color-run-1.png", image_caption:"Graffiti Run · Houston", image_sub:"12,000+ participants · Fully operated by FlowState",
   },
   services: {

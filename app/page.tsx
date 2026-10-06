@@ -28,7 +28,6 @@ const FALLBACK_LOGOS = [
   { name:"Houston Parks Dept.", abbr:"Houston, TX" },
   { name:"City of Austin", abbr:"Austin, TX" },
   { name:"ATX Summer Fest", abbr:"Festival" },
-  { name:"Discovery Green", abbr:"Houston, TX" },
   { name:"City of Norfolk", abbr:"Norfolk, VA" },
   { name:"YMCA Houston", abbr:"Nonprofit" },
   { name:"Galveston Events", abbr:"Galveston, TX" },
@@ -44,7 +43,7 @@ const PROVEN = [
   { title:"Urban Slide — Hampton, VA", sub:"8,000+ attendees · $70K contract · Fully permitted" },
   { title:"Graffiti Run — Houston, TX", sub:"12,000+ participants · Aerial start-line coverage" },
   { title:"Mud Run Series", sub:"65+ events · 330K+ participants total" },
-  { title:"Donut Boat — Discovery Green", sub:"Houston, TX · Operating daily" },
+  { title:"Donut Boat — Mozart's Coffee Roasters", sub:"Austin, TX · Lake Austin" },
 ];
 
 function getCatColor(cat: string) {
