@@ -214,6 +214,50 @@ export function SectionHeading({ children, light=false }: { children: React.Reac
 const US_STATES = ["AL","AK","AZ","AR","CA","CO","CT","DE","DC","FL","GA","HI","ID","IL","IN","IA","KS","KY","LA","ME","MD","MA","MI","MN","MS","MO","MT","NE","NV","NH","NJ","NM","NY","NC","ND","OH","OK","OR","PA","RI","SC","SD","TN","TX","UT","VT","VA","WA","WV","WI","WY"];
 const INTEREST_OPTIONS = ["Urban Slide","Mud Run","Color Run","5K/Marathon","Triathlon","Convention","Trade Show","Crawfish Festival","Light Show","Movies on Lake","Donut Boat","Boat Rentals","Paddle Boards","Fundraiser","Street Closure","Ticketing","Staffing","Marketing"];
 
+const MONTHS = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+function DatePicker({ value, onChange, inputStyle }: { value: string; onChange: (v: string) => void; inputStyle: React.CSSProperties }) {
+  const now = new Date();
+  const [month, setMonth] = useState(() => value ? String(parseInt(value.split("-")[1])) : "");
+  const [day, setDay] = useState(() => value ? String(parseInt(value.split("-")[2])) : "");
+  const [year, setYear] = useState(() => value ? value.split("-")[0] : "");
+
+  const currentYear = now.getFullYear();
+  const years = Array.from({ length: 5 }, (_, i) => currentYear + i);
+
+  const daysInMonth = (m: number, y: number) => new Date(y, m, 0).getDate();
+  const maxDay = month && year ? daysInMonth(parseInt(month), parseInt(year)) : 31;
+  const days = Array.from({ length: maxDay }, (_, i) => i + 1);
+
+  const sel: React.CSSProperties = { ...inputStyle, cursor: "pointer", appearance: "none" as const, WebkitAppearance: "none" as const, backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23F1F5F9' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E")`, backgroundRepeat: "no-repeat", backgroundPosition: "right 12px center", paddingRight: 32 };
+
+  const update = (m: string, d: string, y: string) => {
+    if (m && d && y) {
+      const dd = Math.min(parseInt(d), daysInMonth(parseInt(m), parseInt(y)));
+      onChange(`${y}-${m.padStart(2,"0")}-${String(dd).padStart(2,"0")}`);
+    } else {
+      onChange("");
+    }
+  };
+
+  return (
+    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1.5fr", gap: 8 }}>
+      <select aria-label="Month" style={sel} value={month} onChange={e => { setMonth(e.target.value); update(e.target.value, day, year); }}>
+        <option value="">Month</option>
+        {MONTHS.map((m, i) => <option key={m} value={String(i+1)}>{m}</option>)}
+      </select>
+      <select aria-label="Day" style={sel} value={day} onChange={e => { setDay(e.target.value); update(month, e.target.value, year); }}>
+        <option value="">Day</option>
+        {days.map(d => <option key={d} value={String(d)}>{d}</option>)}
+      </select>
+      <select aria-label="Year" style={sel} value={year} onChange={e => { setYear(e.target.value); update(month, day, e.target.value); }}>
+        <option value="">Year</option>
+        {years.map(y => <option key={y} value={String(y)}>{y}</option>)}
+      </select>
+    </div>
+  );
+}
+
 export function EventInquiryForm({ defaultExperience, showInterests=false }: { defaultExperience?: string; showInterests?: boolean }) {
   const [form, setForm] = useState({ name:"",email:"",phone:"",organization:"",city:"",state:"",event_date:"",budget_range:"",message:"",experience_interest: defaultExperience?[defaultExperience]:[] as string[], website:"" });
   const [submitted, setSubmitted] = useState(false);
@@ -267,7 +311,10 @@ export function EventInquiryForm({ defaultExperience, showInterests=false }: { d
         </div>
       </div>
       <div style={{ display:"grid", gridTemplateColumns:"repeat(auto-fit,minmax(180px,1fr))", gap:"1rem" }}>
-        <div><label htmlFor="inq-date" style={LS}>Target event date</label><input id="inq-date" type="date" min={today} style={IS} value={form.event_date} onChange={set("event_date")}/></div>
+        <div>
+          <label style={LS}>Target event date</label>
+          <DatePicker value={form.event_date} onChange={v => setForm(f=>({...f,event_date:v}))} inputStyle={IS} />
+        </div>
         <div><label htmlFor="inq-budget" style={LS}>Budget range</label>
           <select id="inq-budget" style={{...IS,cursor:"pointer"}} value={form.budget_range} onChange={set("budget_range")}>
             <option value="">Not sure yet</option><option>Under $25K</option><option>$25K–$50K</option><option>$50K–$100K</option><option>$100K+</option>
